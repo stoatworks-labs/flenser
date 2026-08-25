@@ -48,7 +48,12 @@ corner of a 21:9 frame is 2.54 wheel units out. `fltest --null` depends on it.
   the OpenFX bundle through `ofxprobe`. Neither is a host.
 - **No Windows build has been run**, or even built — the release workflow's
   windows-latest job has never been dispatched.
-- **The Linux jobs have never run.** They were copied from `orrery`'s
+- ~~**The Linux jobs have never run.**~~ Both ran on the v0.1.0 tag and both
+  passed: the OFX bundle built in AlmaLinux 8 asks for nothing newer than
+  GLIBC_2.28, and Rocky 8 `dlopen`s it and gets `OfxGetNumberOfPlugins -> 2`
+  naming `com.stoatworks.flenser` and `com.stoatworks.flenserlamp`. Still a
+  load and not a render.
+- **The old note, for the record:** They were copied from `orrery`'s
   2026-08-25 commit, which is the shape the whole fleet now carries — see
   [linux ofx builds](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_linux_ofx_builds.md).
   Nothing here has been dispatched, so the glibc floor assertion and the Rocky 8
@@ -59,9 +64,15 @@ corner of a 21:9 frame is 2.54 wheel units out. `fltest --null` depends on it.
   used to check it reports `document.visibilityState === "hidden"`, so
   `requestAnimationFrame` never fires and `draw()` has never run. Same gap
   `afterglow` records.
-- **No release has been cut.** No tag, no signing, no notarisation, and
-  `tools/verify.sh`'s OpenFX ad-hoc-sign check is the only part of the release
-  path that has been exercised.
+- ~~**No release has been cut.**~~ **v0.1.0 shipped 2026-08-25**, with the full
+  five-homes workup: seven artefacts (macOS universal bundle + dmg, Windows dll
+  + NSIS installer, OpenFX for macOS, Windows and Linux), the macOS ones signed
+  and notarised by the autosigner; the browser demo on its own custom domain; a
+  project page, a suite entry and a published user guide; a project video
+  (`QJ50vPvVlDc`) and an Instagram Reel; and a Burrow catalogue entry.
+  Everything on the release checklist ran in its documented order — the tag,
+  then the autosigner, then `check-notarised.py`, then `gen-downloads.py`
+  scoped AND `--no-readme` unscoped, then `gen-catalog-data.py`.
 
 ## Registrations deliberately not made from here
 
