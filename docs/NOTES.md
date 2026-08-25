@@ -46,18 +46,18 @@ corner of a 21:9 frame is 2.54 wheel units out. `fltest --null` depends on it.
 - ☠️ **Never loaded into Resolume, and never loaded into Resolve.** Everything
   in the "verified" list in `AGENTS.md` runs the plugin class directly, or runs
   the OpenFX bundle through `ofxprobe`. Neither is a host.
-- **No Windows build has been run**, or even built — the release workflow's
-  windows-latest job has never been dispatched.
-- ~~**The Linux jobs have never run.**~~ Both ran on the v0.1.0 tag and both
-  passed: the OFX bundle built in AlmaLinux 8 asks for nothing newer than
+- ☠️ **No Windows build has ever been RUN.** It builds — the release workflow's
+  windows-latest job produced the two DLLs, the OpenFX bundle and an NSIS
+  installer on the v0.1.0 tag — and nothing has ever loaded one into Resolume
+  on Windows. Building and running are different claims and this is the one
+  that is unmet.
+- **The Linux OpenFX build LOADS, and has never rendered.** Both jobs ran on the
+  v0.1.0 tag: the bundle built in AlmaLinux 8 asks for nothing newer than
   GLIBC_2.28, and Rocky 8 `dlopen`s it and gets `OfxGetNumberOfPlugins -> 2`
-  naming `com.stoatworks.flenser` and `com.stoatworks.flenserlamp`. Still a
-  load and not a render.
-- **The old note, for the record:** They were copied from `orrery`'s
-  2026-08-25 commit, which is the shape the whole fleet now carries — see
-  [linux ofx builds](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_linux_ofx_builds.md).
-  Nothing here has been dispatched, so the glibc floor assertion and the Rocky 8
-  `dlopen` are written and untested in this repo specifically.
+  back, naming `com.stoatworks.flenser` and `com.stoatworks.flenserlamp`. That
+  proves the `pthread_create` link and the glibc floor — see
+  [linux ofx builds](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_linux_ofx_builds.md)
+  for why both are traps — and it is a load, not a render.
 - **The browser demo has never been watched running.** Its shaders are proved
   to be this repo's, its ported maths is proved to agree, and all four shaders
   compile and link as ES 3.00 in a real WebGL2 context — but the Browser pane
@@ -74,19 +74,29 @@ corner of a 21:9 frame is 2.54 wheel units out. `fltest --null` depends on it.
   then the autosigner, then `check-notarised.py`, then `gen-downloads.py`
   scoped AND `--no-readme` unscoped, then `gen-catalog-data.py`.
 
-## Registrations deliberately not made from here
+## Registrations, and what is still outstanding
 
-These are edits to other repos, and they are listed rather than done so that
-whoever cuts the first release does them together:
+Most of these were made when v0.1.0 shipped on 2026-08-25. What is left:
 
-- **`stoatworks-backend`** — add `flenser` to `projects.json` (which is what
-  feeds the About window's facts and `sync-about.py`), and to
-  `resolume-demo/sync.sh`'s repo list so `demo/vendor/` stops being a hand
-  copy. Note that `sync.sh`'s `projects=` path has not been updated for the
-  2026-08-17 tree reorg — see
-  [projects reorg broke fleet scripts](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_projects_reorg_broke_fleet_scripts.md).
-- **`stoatworks-website`** — a project page, an entry on `/video-plugins`, and
-  a hero in `scripts/shots.json`.
+- **`stoatworks-backend`** — `flenser` is **not** in `resolume-demo/sync.sh`'s
+  repo list, so `demo/vendor/` is still a hand copy taken from `afterglow`'s
+  copies and will drift from the kit master. Note that `sync.sh`'s `projects=`
+  path has also not been updated for the 2026-08-17 tree reorg — see
+  [projects reorg broke fleet scripts](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_projects_reorg_broke_fleet_scripts.md)
+  — so it finds none of its targets as it stands.
+- **The About window's facts** come from `stoatworks-backend`'s own
+  `projects.json` via `sync-about.py`; `source/StoatworksAbout*.h` here are the
+  vendored copies. That registration has not been made either, so the About
+  block shows whatever `afterglow`'s copy carried.
+- **Burrow's video for this plugin 404s.** `catalog.json` points every entry's
+  `videoUrl` at the `burrow` repo's `videos-v1` release, and this cut was made
+  after that bundle was built. It needs regenerating — and that tag was failing
+  the autosigner's verification on the day, so it is being worked on anyway.
+
+**Done on 2026-08-25:** the website project page, the `/video-plugins` suite
+entry, the hero in `scripts/shots.json`, the published user guide and its PDF,
+`downloads.json`, `catalog-data.json`, and the Cloudflare custom domain for the
+demo.
 - ~~**Cloudflare**~~ — **done 2026-08-25.** `cf-run npx wrangler deploy` from
   the repo root attached `flenser-demo.stoatworks-labs.com` and Cloudflare
   created the proxied record itself; no dashboard step was needed. Verified by
