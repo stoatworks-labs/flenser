@@ -470,17 +470,18 @@ where there should have been forty, in the demo only, with nothing to see.
   faithful harness but it is not Resolve, and in particular it is not a host
   that renders frames out of order across several threads — which is the
   condition the OpenFX build's whole design assumes.
-- **Nothing built for Windows has ever been RUN**, or built: the Windows job
-  exists in the release workflow and has not been dispatched. The
-  GLEW-from-vcpkg path in particular is only known to be declared. The same is
-  true of the two Linux jobs — they are written and have not run.
-- **The Linux OpenFX build has never been loaded into Resolve.** CI builds it
-  in an AlmaLinux 8 container for glibc 2.28 and then `dlopen`s it on Rocky 8
-  and calls the two entry points a host calls first — which runs the Support
-  library's static initialisers and constructs the factories. That proves the
-  binary is loadable on the distro Blackmagic ships for. It does not render a
-  frame, and Resolve for Linux is x86_64-only and needs a GPU, so it cannot be
-  closed from the Apple Silicon machine this was written on.
+- ☠️ **Nothing built for Windows has ever been RUN.** It builds: the v0.1.0
+  release job produced both DLLs, the OpenFX bundle and an NSIS installer, so
+  the GLEW-from-vcpkg path configures and links. Nothing has loaded one into
+  Resolume on Windows.
+- **The Linux OpenFX build LOADS and has never rendered.** On the v0.1.0 tag
+  the bundle built in AlmaLinux 8 for glibc 2.28, the assertion confirmed it
+  asks for nothing newer, and Rocky 8 `dlopen`ed it and got
+  `OfxGetNumberOfPlugins -> 2` back naming both plugin identifiers — which runs
+  the Support library's static initialisers and constructs the factories. That
+  proves the binary is loadable on the distro Blackmagic ships for. It does not
+  render a frame, and Resolve for Linux is x86_64-only and needs a GPU, so that
+  cannot be closed from the Apple Silicon machine this was written on.
 - **There is no Linux FFGL build and there will not be**: Resolume has no Linux
   version and the FFGL SDK has no Linux path. `FLENSER_BUILD_FFGL=OFF` is what
   lets the OpenFX half configure without a GL loader anywhere.
