@@ -76,9 +76,12 @@ whoever cuts the first release does them together:
   [projects reorg broke fleet scripts](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_projects_reorg_broke_fleet_scripts.md).
 - **`stoatworks-website`** — a project page, an entry on `/video-plugins`, and
   a hero in `scripts/shots.json`.
-- **Cloudflare** — `wrangler.toml` names `flenser-demo.stoatworks-labs.com` as
-  a custom domain, and that hostname does not exist yet. Deploying before the
-  DNS record exists fails the whole deploy rather than deploying without it.
+- ~~**Cloudflare**~~ — **done 2026-08-25.** `cf-run npx wrangler deploy` from
+  the repo root attached `flenser-demo.stoatworks-labs.com` and Cloudflare
+  created the proxied record itself; no dashboard step was needed. Verified by
+  CONTENT rather than status code, and through `--resolve` against 1.1.1.1,
+  because this Mac negative-caches a brand-new name for several minutes and
+  otherwise reports `000` on a deploy that worked.
 - **`~/.claude/launch.json`** already has a `flenser-demo` entry on port 8117,
   added while building this. That file is user config and is not in any repo.
 

@@ -53,9 +53,8 @@ Eight factory presets, in both builds, from one table:
 | **Beading** | Merge at zero: separate hard-edged beads. A mask, a pixel-map driver, a title background. |
 | **Slow Bloom** | Three enormous cells nearly filling the gate. Almost a colour wash. |
 
-There is a browser demo that runs the plugin's own shaders:
-**https://flenser-demo.stoatworks-labs.com** *(not published yet — see
-`docs/NOTES.md`)*.
+There is a browser demo that runs the plugin's own shaders, with nothing
+uploaded: **https://flenser-demo.stoatworks-labs.com**
 
 ---
 

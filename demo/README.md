@@ -1,9 +1,8 @@
 # demo/ — the browser demo
 
-Intended for **https://flenser-demo.stoatworks-labs.com**, to be linked from the
-project page and from the [video plugins
-page](https://stoatworks-labs.com/video-plugins/) once this repo is published.
-Neither the hostname nor the project page exists yet — see `../docs/NOTES.md`.
+Live at **https://flenser-demo.stoatworks-labs.com**, linked from the project
+page and from the [video plugins
+page](https://stoatworks-labs.com/video-plugins/).
 
 **This is not the plugin.** It is the GLSL from
 [`source/Shaders.cpp`](../source/Shaders.cpp), copied across unedited and run in
