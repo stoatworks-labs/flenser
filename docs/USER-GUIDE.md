@@ -1,4 +1,28 @@
-# Flenser — user guide
+# Flenser user guide
+
+Flenser is **a liquid light show** — oil, water, alcohol and dye between two watch
+glasses on an overhead projector — as an FFGL source and effect for
+[Resolume](https://resolume.com) Arena and Avenue, and an OpenFX generator and filter
+for DaVinci Resolve, Nuke, Natron and Vegas.
+
+Cells of oil press on each other and join with a fillet. Each one is a dye filter, so
+where two cross they **multiply** — cyan over magenta is blue, not white. The meniscus
+at every edge is a lens that displaces what is behind it, splits it by wavelength, and
+throws a bright caustic just inside a dark rim. Behind all of it is a condenser with a
+hot spot, a colour temperature and a round gate.
+
+> **Before you rely on this:** released at **v0.1.0**. The model exists twice — once in
+> GLSL for the GPU and once in C++ for the OpenFX build — and the two are measured
+> against each other across **1.6 million values** over every control, with no
+> disagreement past 5e-4. Both builds are separately proved to leave a picture exactly
+> as they found it when the wheel is clear: **0 of 230,400 bytes** differ through the
+> Resolume build, **0 of 921,600** through the OpenFX one. All 33 controls reach the
+> picture, in both bundles.
+>
+> **It has never been loaded into Resolume, and never into Resolve.** Everything above
+> runs the plugin directly, or runs the OpenFX bundle through a test host. The Windows
+> and Linux builds have never been run. Check it in your own rig before trusting it in
+> a show.
 
 Thirty-three controls, in seven groups. This is what each one does and, more
 usefully, what it does *with* the others.
