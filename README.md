@@ -38,6 +38,49 @@ meniscus.
 
 ---
 
+<!-- downloads:start -->
+
+## Download
+
+**[v0.1.0](https://github.com/stoatworks-labs/flenser/releases/tag/v0.1.0)** — prebuilt for macOS, Windows and Linux. Pick your platform:
+
+<details>
+<summary><b>macOS</b> — Universal (Apple Silicon + Intel)</summary>
+
+| Build | Download | Size |
+| --- | --- | --- |
+| Universal (Apple Silicon + Intel) · .dmg disk image | [`flenser-0.1.0-macos-universal.dmg`](https://github.com/stoatworks-labs/flenser/releases/download/v0.1.0/flenser-0.1.0-macos-universal.dmg) | 455 KB |
+| Universal (Apple Silicon + Intel) · .zip archive | [`flenser-macos-universal.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-macos-universal.zip) | 403 KB |
+| Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-macos-universal.zip) | 254 KB |
+
+</details>
+
+<details>
+<summary><b>Windows</b> — x64</summary>
+
+| Build | Download | Size |
+| --- | --- | --- |
+| x64 · .exe installer | [`flenser-0.1.0-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/flenser/releases/download/v0.1.0/flenser-0.1.0-windows-x86_64-setup.exe) | 227 KB |
+| x64 · .zip archive | [`flenser-windows-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-windows-x86_64.zip) | 245 KB |
+| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-windows-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-windows-x86_64.zip) | 77 KB |
+
+</details>
+
+<details>
+<summary><b>Linux</b> — x64</summary>
+
+| Build | Download | Size |
+| --- | --- | --- |
+| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-linux-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-linux-x86_64.zip) | 721 KB |
+
+</details>
+
+All builds, checksums and release notes: [github.com/stoatworks-labs/flenser/releases](https://github.com/stoatworks-labs/flenser/releases).
+
+macOS builds are signed and notarised and open normally. The Windows builds are unsigned, so SmartScreen warns once.
+
+<!-- downloads:end -->
+
 ## What it looks like
 
 Eight factory presets, in both builds, from one table:
