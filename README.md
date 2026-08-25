@@ -53,7 +53,12 @@ Eight factory presets, in both builds, from one table:
 | **Beading** | Merge at zero: separate hard-edged beads. A mask, a pixel-map driver, a title background. |
 | **Slow Bloom** | Three enormous cells nearly filling the gate. Almost a colour wash. |
 
-There is a browser demo that runs the plugin's own shaders, with nothing
+[![Flenser — a liquid light show as a Resolume plugin](docs/video-thumb.png)](https://www.youtube.com/watch?v=QJ50vPvVlDc)
+
+*[Watch it running](https://www.youtube.com/watch?v=QJ50vPvVlDc) — 48 seconds,
+rendered by the plugin's own harness.*
+
+There is also a browser demo that runs the plugin's own shaders, with nothing
 uploaded: **https://flenser-demo.stoatworks-labs.com**
 
 ---
