@@ -821,10 +821,11 @@ mountDemo({
   presets: PRESETS,
 
   variants: {
+    label: 'Plugin',
     default: 'lamp',
     options: [
-      { id: 'lamp', name: 'Flenser Lamp', hint: 'The clip goes where the lamp was.' },
-      { id: 'source', name: 'Flenser', hint: 'The wheel with the plugin\'s own lamp behind it.' },
+      { id: 'lamp', name: 'Flenser Lamp (effect)', hint: 'FF_EFFECT — the clip goes where the projector\'s lamp was, and you look through the oil at it.' },
+      { id: 'source', name: 'Flenser (source)', hint: 'FF_SOURCE — the wheel with the plugin\'s own lamp behind it; takes no input.' },
     ],
   },
 
