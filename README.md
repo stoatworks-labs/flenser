@@ -74,6 +74,11 @@ firewall prompts, and how to verify a download.
 **Windows.** `Flenser.dll` and `Flenser Lamp.dll` into Resolume's extra effects
 folder; `Flenser.ofx.bundle` into `C:\Program Files\Common Files\OFX\Plugins`.
 
+**Linux.** The OpenFX build only — Resolume has no Linux version. Put
+`Flenser.ofx.bundle` in `/usr/OFX/Plugins`. It is built against glibc 2.28 so
+that it loads on Rocky 8, which is the Linux Resolve supports; anything newer
+loads it too.
+
 ---
 
 ## The controls

@@ -3,7 +3,8 @@
 A liquid light show — oil, water, alcohol and dye between two watch glasses on
 an overhead projector — as an FFGL source and effect for Resolume Arena/Avenue
 and an OpenFX generator and filter for Resolve. C++/GLSL, CMake MODULE →
-universal `.bundle` (macOS) + Windows `.dll`. Public MIT repo.
+universal `.bundle` (macOS) + Windows `.dll`; the OpenFX half also builds for
+Linux, where Resolve runs. Public MIT repo.
 
 Read `AGENTS.md` before changing the field, the rim treatment or the churn.
 
@@ -38,7 +39,13 @@ Read `AGENTS.md` before changing the field, the rim treatment or the churn.
   `… --set density=0 --set refraction=0 --set meniscus=0 --set caustic=0 --set lamp=0.5 --set hotspot=0 --set temperature=0.5 --set gate=1`
   → "0 of N bytes differ".
 - OFX SDK subset (BSD-3) vendored under `external/openfx`.
-- Install for Resolve: copy the bundle into `/Library/OFX/Plugins`.
+- Install for Resolve: copy the bundle into `/Library/OFX/Plugins` (macOS) or
+  `/usr/OFX/Plugins` (Linux).
+- **Linux**: `-DFLENSER_BUILD_FFGL=OFF` builds the OFX plugin alone, with no GL
+  loader in the configure at all. Built in AlmaLinux 8 for glibc 2.28 (Rocky 8
+  is what Resolve supports) and load-tested on Rocky 8. `Threads::Threads` is
+  linked because `pthread_create` is still in libpthread at 2.28 and no static
+  check catches its absence.
 
 ## Verify
 - Everything: `tools/verify.sh`

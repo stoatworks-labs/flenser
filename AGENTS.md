@@ -316,6 +316,20 @@ message about a "subcomponent" that never mentions the plist. This repo's copy
 is parameterised on `@PROJECT_NAME@`, and `tools/verify.sh` runs the release
 step locally.
 
+### ☠️ `pthread_create` is in libpthread until glibc 2.34
+
+The OFX Support library's multi-thread suite calls it, and Rocky 8 — the Linux
+Resolve supports — is glibc 2.28. So a build on any modern distro links and
+runs while the same source refuses to `dlopen` on the one distro that matters,
+with `undefined symbol: pthread_create`.
+
+**It passes every static check**: it compiles, links, exports `OfxGetPlugin`
+and passes a glibc-version assertion, because a version check reads the symbols
+a binary *asks for* and says nothing about whether anything provides them. Only
+running it finds it. Hence `find_package(Threads REQUIRED)` and
+`Threads::Threads` on the OFX target, and hence the `linux-load` job. Four
+plugins in the fleet failed on exactly this.
+
 ### `vcpkg.json` is invisible from the CMakeLists
 
 GLEW arrives through the vcpkg manifest, and the CMakeLists never mentions it —
@@ -457,9 +471,19 @@ where there should have been forty, in the demo only, with nothing to see.
   that renders frames out of order across several threads — which is the
   condition the OpenFX build's whole design assumes.
 - **Nothing built for Windows has ever been RUN**, or built: the Windows job
-  exists in CI and has not been dispatched. The GLEW-from-vcpkg path in
-  particular is only known to be declared.
-- **Linux has no path at all.** The CMakeLists branches on APPLE and WIN32.
+  exists in the release workflow and has not been dispatched. The
+  GLEW-from-vcpkg path in particular is only known to be declared. The same is
+  true of the two Linux jobs — they are written and have not run.
+- **The Linux OpenFX build has never been loaded into Resolve.** CI builds it
+  in an AlmaLinux 8 container for glibc 2.28 and then `dlopen`s it on Rocky 8
+  and calls the two entry points a host calls first — which runs the Support
+  library's static initialisers and constructs the factories. That proves the
+  binary is loadable on the distro Blackmagic ships for. It does not render a
+  frame, and Resolve for Linux is x86_64-only and needs a GPU, so it cannot be
+  closed from the Apple Silicon machine this was written on.
+- **There is no Linux FFGL build and there will not be**: Resolume has no Linux
+  version and the FFGL SDK has no Linux path. `FLENSER_BUILD_FFGL=OFF` is what
+  lets the OpenFX half configure without a GL loader anywhere.
 - **The browser demo has never been watched running.** Its shaders are proved
   to be this repo's, its maths is proved to agree, and every program compiles
   and links in a real WebGL2 context — but the Browser pane used to check it

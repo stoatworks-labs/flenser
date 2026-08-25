@@ -43,6 +43,18 @@ endif()
 
 option(FLENSER_BUILD_TOOLS "Build the offline render and measurement harness" ON)
 
+# The FFGL plugins, the FFGL SDK submodule and GLEW are one dependency group,
+# and the OpenFX plugin belongs to none of it. Turning this OFF builds the OFX
+# plugin alone, with no GL loader anywhere in the configure -- which is what
+# the Linux job does, because the FFGL SDK has no Linux path, and GLEW would
+# otherwise have to be installed to build something that never calls it.
+#
+# It matters at CONFIGURE time, not build time: the SDK's own
+# `find_package(GLEW REQUIRED)` fails before a line is compiled.
+option(FLENSER_BUILD_FFGL "Build the FFGL plugins (needs the FFGL SDK and, off macOS, GLEW)" ON)
+
+if(FLENSER_BUILD_FFGL)
+
 # ---------------------------------------------------------------------------
 # The Resolume FFGL SDK, as a git submodule pinned to b1afaf9 -- the rev the
 # rest of the fleet pins. See AGENTS.md for what is wrong with it.
@@ -165,6 +177,8 @@ elseif(APPLE)
         CACHE PATH "" FORCE)
 endif()
 
+endif()  # FLENSER_BUILD_FFGL
+
 # ---------------------------------------------------------------------------
 # The OpenFX build -- both plugins in one bundle -- for Resolve/Nuke/Natron/
 # Vegas. CPU render against the vendored OFX SDK subset under external/openfx
@@ -206,6 +220,17 @@ if(BUILD_OFX)
         FLENSER_VERSION="${PROJECT_VERSION}"
     )
 
+    # Threads, explicitly. The OFX Support library's multi-thread suite calls
+    # pthread_create, and on Rocky 8 -- glibc 2.28, the floor Resolve supports
+    # -- that still lives in libpthread; libpthread was only folded into libc
+    # in glibc 2.34. Leave it out and the plugin compiles, links, passes a
+    # symbol check and a glibc-version check, and then fails at dlopen with
+    # "undefined symbol: pthread_create". macOS and Windows never show it, and
+    # neither does any static check -- a version check reads the symbols a
+    # binary ASKS for and says nothing about whether anything provides them.
+    find_package(Threads REQUIRED)
+    target_link_libraries(FlenserOFX PRIVATE Threads::Threads)
+
     set(OFX_BUNDLE_DIR "${CMAKE_BINARY_DIR}/Flenser.ofx.bundle")
     set_target_properties(FlenserOFX PROPERTIES
         PREFIX ""
@@ -236,7 +261,9 @@ if(BUILD_OFX)
     endif()
 endif()
 
+if(FLENSER_BUILD_FFGL)
 install(TARGETS FlenserSource FlenserEffect
     LIBRARY DESTINATION "."
     BUNDLE  DESTINATION "."
 )
+endif()  # FLENSER_BUILD_FFGL

@@ -48,10 +48,11 @@ corner of a 21:9 frame is 2.54 wheel units out. `fltest --null` depends on it.
   the OpenFX bundle through `ofxprobe`. Neither is a host.
 - **No Windows build has been run**, or even built — the release workflow's
   windows-latest job has never been dispatched.
-- **No Linux path.** The CMakeLists branches on APPLE and WIN32. `afterglow`
-  has a Linux OpenFX-only job in its release workflow; that shape has not been
-  copied here yet, and would need a `FLENSER_BUILD_FFGL=OFF` option that does
-  not exist.
+- **The Linux jobs have never run.** They were copied from `orrery`'s
+  2026-08-25 commit, which is the shape the whole fleet now carries — see
+  [linux ofx builds](https://github.com/stoatworks-labs/fleet-notes/blob/main/notes/reference_linux_ofx_builds.md).
+  Nothing here has been dispatched, so the glibc floor assertion and the Rocky 8
+  `dlopen` are written and untested in this repo specifically.
 - **The browser demo has never been watched running.** Its shaders are proved
   to be this repo's, its ported maths is proved to agree, and all four shaders
   compile and link as ES 3.00 in a real WebGL2 context — but the Browser pane
@@ -92,4 +93,5 @@ whoever cuts the first release does them together:
   and Boil are the two controls that would take it. Not done because the OpenFX
   side has no tempo, and a control that exists in one build and not the other
   needs the same defence Simmer has.
-- **A Linux OpenFX job**, per the note above.
+- **Statically linking GLEW** is an open fleet question for `vectrix` only and
+  does not apply here: nothing in this repo's OFX target touches GL.
