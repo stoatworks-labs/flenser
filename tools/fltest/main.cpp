@@ -22,6 +22,7 @@
 		fltest --cells                  the wheel as JSON, for the demo checker
 		fltest --field                  GLSL against C++, over the whole space
 		fltest --null                   a clear wheel does not touch the clip
+		fltest --continuity             moving Speed or Spin does not move the picture
 		fltest --presets                every preset survives every host
 		fltest --card /tmp/card.png     the test card on its own
 		fltest --bench                  the render cost
@@ -627,9 +628,15 @@ int dumpCells()
 	spectrum.drift     = 0.3f;
 	spectrum.seed      = 4242;
 
-	const Case cases[] = {
+	Case cases[] = {
 		{ "base", base }, { "spun", spun }, { "inked", inked }, { "spectrum", spectrum }
 	};
+
+	//These wheels are built by hand rather than driven by a clock, so they
+	//carry a time and a rate and no phase. The demo's port does the same
+	//thing at the same point, which is what keeps the two comparable.
+	for( Case& c : cases )
+		SetFreeRunningPhases( c.wheel );
 
 	std::printf( "  \"wheels\": {\n" );
 	for( size_t c = 0; c < sizeof( cases ) / sizeof( cases[ 0 ] ); ++c )
@@ -1188,6 +1195,117 @@ double benchAt( FlenserPlugin& plugin, bool overInput, int width, int height, in
 	return std::chrono::duration< double, std::milli >( end - start ).count() / frames;
 }
 
+//---------------------------------------------------------------------------
+// --continuity: moving a rate control does not move the picture.
+//
+// Speed and Spin set a RATE. Changing a rate has to change what happens next
+// and nothing else -- if the phase is `time * rate`, changing the rate
+// rescales the entire history, and the wheel jumps to wherever that lands.
+// Five seconds in it is a visible lurch; an hour into a show a small nudge is
+// worth hundreds of turns and the arrangement is simply gone. Reported from a
+// live rig as "unusable in performance" (#1), and the same defect orrery had.
+//
+// The assertion is exact rather than a threshold, which is what makes it
+// worth having: on the frame the control moves, the anchor carries the phase
+// forward and the new rate has had zero seconds to act, so that frame must be
+// **bit-identical** to the frame that would have been drawn had nothing been
+// touched. Then the frame after it must differ, or the control is dead.
+//
+// Both halves are needed. The first alone passes if the control does nothing
+// at all; the second alone passes on the very code this replaces.
+//---------------------------------------------------------------------------
+int runContinuityCheck( int width, int height )
+{
+	constexpr double kFps  = 60.0;
+	constexpr int kLead    = 300;///< 5 s at 60 fps, so a rescale is unmissable
+
+	// Motion the change could disturb, and nothing else moving that might
+	// mask a jump: no boil, no churn, no feedback.
+	struct Setting
+	{
+		const char* name;
+		float value;
+	};
+	const Setting bed[] = {
+		{ "Drift", 0.8f }, { "Boil", 0.0f }, { "Churn", 0.0f }, { "Simmer", 0.0f },
+	};
+
+	struct Case
+	{
+		const char* control;
+		float from;
+		float to;
+	};
+	//Both are rates, and Spin is bipolar -- 0.5 is its null, so this is a
+	//change of direction as well as of size.
+	const Case cases[] = {
+		{ "Speed", 0.20f, 0.62f },
+		{ "Spin", 0.60f, 0.42f },
+	};
+
+	// One run of `frames` frames, optionally moving `control` to `to` at
+	// frame `changeAt`. A fresh plugin every time: the anchors are state, and
+	// reusing one would carry the previous run's into this one.
+	auto run = [ & ]( const Case& c, int frames, int changeAt ) {
+		FlenserPlugin plugin( false );
+		std::string error;
+		for( const Setting& b : bed )
+			applySetting( plugin, std::string( b.name ) + "=" + std::to_string( b.value ), error );
+		applySetting( plugin, std::string( c.control ) + "=" + std::to_string( c.from ), error );
+
+		const std::function< void( int ) > perFrame = [ & ]( int frame ) {
+			if( changeAt >= 0 && frame == changeAt )
+			{
+				std::string e;
+				applySetting( plugin, std::string( c.control ) + "=" + std::to_string( c.to ), e );
+			}
+		};
+		return renderFrames( plugin, false, width, height, frames, kFps, &perFrame );
+	};
+
+	int failures = 0;
+	for( const Case& c : cases )
+	{
+		const std::vector< unsigned char > undisturbed = run( c, kLead + 1, -1 );
+		const std::vector< unsigned char > atTheChange = run( c, kLead + 1, kLead );
+		const std::vector< unsigned char > afterwards  = run( c, kLead + 2, kLead );
+		const std::vector< unsigned char > wouldHaveBeen = run( c, kLead + 2, -1 );
+
+		size_t jumped = 0;
+		for( size_t i = 0; i < undisturbed.size() && i < atTheChange.size(); ++i )
+			if( undisturbed[ i ] != atTheChange[ i ] )
+				++jumped;
+
+		size_t moved = 0;
+		for( size_t i = 0; i < afterwards.size() && i < wouldHaveBeen.size(); ++i )
+			if( afterwards[ i ] != wouldHaveBeen[ i ] )
+				++moved;
+
+		if( jumped != 0 )
+		{
+			std::printf( "continuity: %s MOVED THE PICTURE -- %zu of %zu bytes differ on the frame "
+			             "it changed\n",
+			             c.control, jumped, undisturbed.size() );
+			++failures;
+		}
+		else if( moved == 0 )
+		{
+			std::printf( "continuity: %s changed nothing at all on the frame after -- dead, not "
+			             "continuous\n",
+			             c.control );
+			++failures;
+		}
+		else
+		{
+			std::printf( "continuity: %s holds the picture on the frame it moves, and %zu of %zu "
+			             "bytes differ one frame later\n",
+			             c.control, moved, afterwards.size() );
+		}
+	}
+
+	return failures == 0 ? 0 : 1;
+}
+
 int runBench( bool overInput, int frames, double fps )
 {
 	struct Size
@@ -1471,6 +1589,7 @@ int main( int argc, char** argv )
 	bool wantCells   = false;
 	bool wantField   = false;
 	bool wantNull    = false;
+	bool wantContinuity = false;
 	bool wantPresets = false;
 	bool wantBench   = false;
 	bool wantPipe    = false;
@@ -1516,6 +1635,8 @@ int main( int argc, char** argv )
 			wantField = true;
 		else if( argument == "--null" )
 			wantNull = true;
+		else if( argument == "--continuity" )
+			wantContinuity = true;
 		else if( argument == "--presets" )
 			wantPresets = true;
 		else if( argument == "--bench" )
@@ -1569,6 +1690,9 @@ int main( int argc, char** argv )
 
 	if( wantNull )
 		status |= runNullCheck( width, height );
+
+	if( wantContinuity )
+		status |= runContinuityCheck( width, height );
 
 	if( wantPresets )
 		status |= runPresetTest();

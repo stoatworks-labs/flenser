@@ -618,11 +618,14 @@ private:
 
 		w.time = static_cast< float >( t / fps );
 
-		//`time * boil` rather than an integrated phase. See the note at the
-		//top of this file: there is no previous frame to have integrated
-		//from, and a deterministic frame matters more in a host that renders
-		//them out of order.
+		//`time * rate` rather than an integrated or anchored phase, for boil
+		//and for the orbits alike. See the note at the top of this file:
+		//there is no previous frame to have integrated from, and a
+		//deterministic frame matters more in a host that renders them out of
+		//order. The FFGL build makes the opposite trade for the opposite
+		//reason -- an operator moving a control while watching.
 		w.boilPhase = w.time * w.boil;
+		SetFreeRunningPhases( w );
 
 		setup.cells.clear();
 		const int count = std::min( std::max( w.cells, 0 ), kMaxCells );

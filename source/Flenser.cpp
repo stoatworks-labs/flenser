@@ -535,9 +535,7 @@ FFResult FlenserPlugin::ProcessOpenGL( ProcessOpenGLStruct* pGL )
 	const double now = ( raw >= 0.0 && clockScale != 0.0 ) ? raw * clockScale
 	                                                       : wallNow - wallStart;
 
-	//Integrate the boil rate; never rescale its history. The cell orbits are
-	//NOT integrated -- see the note in Flenser.h for why the two are treated
-	//differently on purpose.
+	//Integrate the boil rate; never rescale its history.
 	if( lastHostTime >= 0.0 )
 	{
 		const double delta = std::clamp( now - lastHostTime, 0.0, kMaxFrameDelta );
@@ -557,6 +555,13 @@ FFResult FlenserPlugin::ProcessOpenGL( ProcessOpenGLStruct* pGL )
 	Wheel wheel     = ResolveWheel( aspect );
 	wheel.time      = static_cast< float >( now );
 	wheel.boilPhase = static_cast< float >( boilPhase );
+
+	//Anchored, not `time * rate`. Moving Speed or Spin has to change what
+	//happens next without moving what is already on screen -- see the note in
+	//Flenser.h. Both anchors start at zero, so until an operator touches
+	//either control these are bit-for-bit the old product.
+	wheel.orbitPhase = static_cast< float >( orbitAnchor.At( now, wheel.speed ) );
+	wheel.spinPhase  = static_cast< float >( spinAnchor.At( now, wheel.spin ) );
 
 	//Two flat arrays rather than an array of Cell, because that is what
 	//glUniform3fv wants and building them here costs a couple of dozen

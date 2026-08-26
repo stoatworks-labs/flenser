@@ -36,7 +36,7 @@ import {
   gateFromParam, gateSoftFromParam, GATE_OFF,
   simmerFromParam, smearFromParam,
   PALETTE_NAMES, LAMP_MODE_NAMES,
-  cellAt,
+  cellAt, setFreeRunningPhases,
 } from './oil.js';
 
 //===========================================================================
@@ -679,6 +679,10 @@ class FlenserRenderer {
       time,
     };
 
+    // As the OpenFX build does it, not as the FFGL build does — the same
+    // trade, and for the same reason, as the boil phase below.
+    setFreeRunningPhases(wheel);
+
     const cellCount = Math.min(wheel.cells, MAX_CELLS);
     for (let i = 0; i < cellCount; ++i) {
       const cell = cellAt(i, wheel);
@@ -838,6 +842,7 @@ mountDemo({
 
   differences: [
     'The boil phase here is time × Boil, which is how the OpenFX build does it. The Resolume build INTEGRATES the rate instead, so that nudging Boil live changes what happens next rather than rescaling the whole history and jumping the field somewhere else. Scrub-ability was the trade, and this page is scrubbable.',
+    'Speed and Spin are the same trade. Here, and in the OpenFX build, the orbit and rotation phases are time × rate. The Resolume build ANCHORS them, carrying the phase forward whenever the rate changes, because otherwise moving either control an hour into a show rescales the whole history and teleports the wheel — the two orbit frequencies never repeat, so there is no old position to land back on.',
     'Simmer is a feedback buffer, and it exists in the Resolume build and on this page but NOT in the OpenFX build — a host that renders frames out of order cannot have one and still match its own preview.',
     'A browser tab that loses focus throttles its animation frames. Everything except Simmer is a pure function of the clock, so the picture is unaffected; the simmer trail is shorter in real time than it would be in a host.',
     'Preset is an option parameter in the plugin, with Custom as element 0 and a slider edit dropping back to it. Here the same eight presets are in the panel header instead, from the plugin\'s own table.',

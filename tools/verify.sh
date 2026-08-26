@@ -6,6 +6,12 @@
 #
 # Eight things get checked, and they fail in different ways:
 #
+#   --continuity  that moving Speed or Spin changes what happens NEXT and
+#              does not move what is already drawn. Exact, not a threshold:
+#              the frame the control moves on must be bit-identical to the
+#              frame that would have been drawn untouched, and the frame
+#              after it must differ. Shipped broken once (#1).
+#
 #   --null     that a clear wheel does not touch the clip. This is the one
 #              that matters. With no dye, no refraction and no rim the effect
 #              build is a piece of clear glass, and the picture has to come
@@ -86,6 +92,14 @@ if ./$BUILD/fltest --null --width 320 --height 180; then
 	:
 else
 	failures+=("null")
+fi
+
+echo
+echo "== continuity: moving a rate control does not move the picture"
+if ./$BUILD/fltest --continuity --width 320 --height 180; then
+	:
+else
+	failures+=("continuity")
 fi
 
 echo

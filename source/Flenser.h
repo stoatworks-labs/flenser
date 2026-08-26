@@ -264,15 +264,67 @@ private:
 	// watched. Integrating the rate instead means the control changes what
 	// happens next and nothing else.
 	//
-	// The cell orbits are NOT integrated: they are driven by `time * speed`,
-	// because a cell's orbit is a closed loop and rescaling its phase moves
-	// it along a path it was going to travel anyway. The distinction is worth
-	// keeping straight -- it is the difference between a control that jumps
-	// the picture and one that does not.
+	// Speed and Spin were the exception, and the exception was wrong. They
+	// were driven by `time * speed` and `time * spin` on the reasoning that a
+	// cell's orbit is a closed loop, so rescaling its phase only moves it
+	// along a path it was going to travel anyway. True, and beside the point:
+	// it moves it to a DIFFERENT POINT on that path, and an hour into a
+	// composition a small nudge to Speed is worth hundreds of turns, so the
+	// wheel teleports. Worse than the boil case, in fact, because the two
+	// orbit frequencies are deliberately incommensurate -- the trajectory is
+	// not a closed loop at all but a quasi-periodic one that never repeats,
+	// so there is no "back where it was" to land on. Reported from a live
+	// rig as "unusable in performance", which is exactly right (#1).
+	//
+	// Both are now ANCHORED rather than integrated: `phase + (now - clock) *
+	// rate`, with the phase carried forward once per rate CHANGE instead of
+	// once per frame. Same continuity, and a long session cannot accumulate
+	// per-frame rounding into a drift. The anchors start at clock zero and
+	// phase zero, so until the operator touches a control the arithmetic is
+	// exactly the old `time * rate` -- which is what lets every rendered-frame
+	// test and tools/sweep.py go on measuring what they measured before.
+	//
+	// The OpenFX builds and the browser demo keep `time * rate`, through
+	// SetFreeRunningPhases. Both re-render on a seek and must be a pure
+	// function of the timestamp; neither has an operator nudging a slider.
 	//---------------------------------------------------------------------
 	double hostTime     = -1.0;
 	double lastHostTime = -1.0;
 	double boilPhase    = 0.0;
+
+	/// A phase advancing at a rate that may change under it, without the
+	/// change moving where the picture already is.
+	struct PhaseAnchor
+	{
+		double phase = 0.0; ///< turns accumulated up to `clock`
+		double clock = 0.0; ///< host seconds at which `phase` was carried
+		double rate  = 0.0; ///< turns per second since `clock`
+		bool   armed = false;
+
+		/// The phase now, carrying the anchor forward if the rate has moved.
+		///
+		/// `armed` rather than a sentinel rate: Spin is bipolar and Speed can
+		/// be parked at zero, so every value a rate can hold is a legitimate
+		/// one and none of them is free to mean "unset".
+		double At( double now, double newRate )
+		{
+			if( !armed )
+			{
+				rate  = newRate;
+				armed = true;
+			}
+			else if( newRate != rate )
+			{
+				phase += ( now - clock ) * rate;
+				clock = now;
+				rate  = newRate;
+			}
+			return phase + ( now - clock ) * rate;
+		}
+	};
+
+	PhaseAnchor orbitAnchor;
+	PhaseAnchor spinAnchor;
 
 	//---------------------------------------------------------------------
 	// Host clock units.
