@@ -11,7 +11,7 @@ at every edge is a lens that displaces what is behind it, splits it by wavelengt
 throws a bright caustic just inside a dark rim. Behind all of it is a condenser with a
 hot spot, a colour temperature and a round gate.
 
-> **Before you rely on this:** released at **v0.1.0**. The model exists twice — once in
+> **Before you rely on this:** released at **v0.1.2**. The model exists twice — once in
 > GLSL for the GPU and once in C++ for the OpenFX build — and the two are measured
 > against each other across **1.6 million values** over every control, with no
 > disagreement past 5e-4. Both builds are separately proved to leave a picture exactly
