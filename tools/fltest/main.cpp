@@ -23,6 +23,7 @@
 		fltest --field                  GLSL against C++, over the whole space
 		fltest --null                   a clear wheel does not touch the clip
 		fltest --continuity             moving Speed or Spin does not move the picture
+		fltest --matte                  the cutout mode, in both builds
 		fltest --presets                every preset survives every host
 		fltest --card /tmp/card.png     the test card on its own
 		fltest --bench                  the render cost
@@ -1306,6 +1307,111 @@ int runContinuityCheck( int width, int height )
 	return failures == 0 ? 0 : 1;
 }
 
+//---------------------------------------------------------------------------
+// --matte: the cutout mode does what it says.
+//
+// Matte is Over composited against nothing, so the clip plays no part in it.
+// Two things follow, and both are worth pinning down because both are the
+// reason the mode was added (#2):
+//
+//   * the generator and the effect render it IDENTICALLY -- it is the only
+//     mode of which that is true, and it is what lets one set of numbers
+//     document both plugins;
+//   * where the oil covers nothing the pixel is transparent AND black, since
+//     the output is premultiplied. A host that ignores alpha still gets the
+//     black field somebody asked for.
+//
+// Without the second check the mode could quietly become "opaque black
+// everywhere", which keys as nothing at all and looks fine in a screenshot.
+//
+// **One quantisation step of slack on that second check, and only one.** The
+// lamp is brighter than white where a caustic lands, so `col` exceeds 1 and a
+// pixel whose coverage rounds to alpha 0 in eight bits can still round its
+// premultiplied colour up to 1/255. That is the arithmetic being right at the
+// edge of the format, not a premultiplication error -- which would leave the
+// dye's full colour standing at alpha 0, hundreds of steps away, and is what
+// this still catches.
+//---------------------------------------------------------------------------
+int runMatteCheck( int width, int height )
+{
+	const int mode = static_cast< int >( LampMode::Matte );
+
+	auto render = [ & ]( bool overInput ) {
+		FlenserPlugin plugin( overInput );
+		std::string error;
+		applySetting( plugin, "Mode=" + std::to_string( mode ), error );
+		return renderFrames( plugin, overInput, width, height, 2, 60.0 );
+	};
+
+	const std::vector< unsigned char > generator = render( false );
+	const std::vector< unsigned char > effect    = render( true );
+
+	int failures = 0;
+
+	size_t differ = 0;
+	for( size_t i = 0; i < generator.size() && i < effect.size(); ++i )
+		if( generator[ i ] != effect[ i ] )
+			++differ;
+
+	if( differ != 0 )
+	{
+		std::printf( "matte: the generator and the effect disagree -- %zu of %zu bytes\n",
+		             differ, generator.size() );
+		++failures;
+	}
+	else
+	{
+		std::printf( "matte: the generator and the effect are identical, %zu bytes\n",
+		             generator.size() );
+	}
+
+	// Premultiplied: every fully transparent pixel must be black, and some of
+	// the frame must be transparent or the mode is not cutting anything out.
+	constexpr unsigned char kQuantisationSlack = 1;
+
+	size_t clear   = 0;
+	size_t lit     = 0;
+	size_t dirty   = 0;
+	unsigned char worst = 0;
+	for( size_t i = 0; i + 3 < generator.size(); i += 4 )
+	{
+		if( generator[ i + 3 ] == 0 )
+		{
+			++clear;
+			const unsigned char brightest =
+				std::max( { generator[ i ], generator[ i + 1 ], generator[ i + 2 ] } );
+			worst = std::max( worst, brightest );
+			if( brightest > kQuantisationSlack )
+				++dirty;
+		}
+		else if( generator[ i + 3 ] == 255 )
+		{
+			++lit;
+		}
+	}
+
+	if( dirty != 0 )
+	{
+		std::printf( "matte: %zu transparent pixels carry colour up to %u/255 -- not "
+		             "premultiplied\n",
+		             dirty, static_cast< unsigned >( worst ) );
+		++failures;
+	}
+	else if( clear == 0 )
+	{
+		std::printf( "matte: nothing is transparent -- the mode cut nothing out\n" );
+		++failures;
+	}
+	else
+	{
+		std::printf( "matte: %zu of %zu pixels fully transparent and black to within %u/255, "
+		             "%zu fully opaque\n",
+		             clear, generator.size() / 4, static_cast< unsigned >( worst ), lit );
+	}
+
+	return failures == 0 ? 0 : 1;
+}
+
 int runBench( bool overInput, int frames, double fps )
 {
 	struct Size
@@ -1590,6 +1696,7 @@ int main( int argc, char** argv )
 	bool wantField   = false;
 	bool wantNull    = false;
 	bool wantContinuity = false;
+	bool wantMatte   = false;
 	bool wantPresets = false;
 	bool wantBench   = false;
 	bool wantPipe    = false;
@@ -1637,6 +1744,8 @@ int main( int argc, char** argv )
 			wantNull = true;
 		else if( argument == "--continuity" )
 			wantContinuity = true;
+		else if( argument == "--matte" )
+			wantMatte = true;
 		else if( argument == "--presets" )
 			wantPresets = true;
 		else if( argument == "--bench" )
@@ -1693,6 +1802,9 @@ int main( int argc, char** argv )
 
 	if( wantContinuity )
 		status |= runContinuityCheck( width, height );
+
+	if( wantMatte )
+		status |= runMatteCheck( width, height );
 
 	if( wantPresets )
 		status |= runPresetTest();

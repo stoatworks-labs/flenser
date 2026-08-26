@@ -252,8 +252,9 @@ float SmearFromParam( float value );
 /// The dye set, as a `Palette`.
 int PaletteFromParam( float optionValue );
 
-/// How the oil meets the clip, as a `LampMode`. Effect build only; the
-/// generator ignores it.
+/// How the oil meets the clip, as a `LampMode`. The three clip modes are
+/// effect-build only and the generator ignores them; `Matte` is not about the
+/// clip at all and both builds honour it.
 int ModeFromParam( float optionValue );
 
 } // namespace flenser

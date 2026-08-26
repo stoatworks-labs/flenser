@@ -103,6 +103,14 @@ else
 fi
 
 echo
+echo "== matte: the cutout mode, identical in both builds and premultiplied"
+if ./$BUILD/fltest --matte --width 320 --height 180; then
+	:
+else
+	failures+=("matte")
+fi
+
+echo
 echo "== field: GLSL against C++"
 if ./$BUILD/fltest --field | tail -2; then
 	:

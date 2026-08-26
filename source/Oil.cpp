@@ -123,6 +123,7 @@ const char* LampModeName( LampMode value )
 	case LampMode::Project: return "Project";
 	case LampMode::Over: return "Over";
 	case LampMode::Colourise: return "Colourise";
+	case LampMode::Matte: return "Matte";
 	default: return "Project";
 	}
 }

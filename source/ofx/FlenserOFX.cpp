@@ -296,14 +296,22 @@ public:
 					col[ c ] = std::max( col[ c ] + causticAmount * ( 0.5f + 0.5f * field.t[ c ] ), 0.0f );
 
 				//---- out through the gate ------------------------------
-				float out[ 4 ];
-				if( s.hasClip && s.mode == LampMode::Over )
-				{
-					const float dyeCover = 1.0f - luma( field.t[ 0 ], field.t[ 1 ], field.t[ 2 ] );
-					const float rimCover =
-						std::max( s.wheel.meniscus * men, std::min( s.wheel.caustic * cst, 1.0f ) );
-					const float cover = clamp01( std::max( dyeCover, rimCover ) ) * gate;
+				const float dyeCover = 1.0f - luma( field.t[ 0 ], field.t[ 1 ], field.t[ 2 ] );
+				const float rimCover =
+					std::max( s.wheel.meniscus * men, std::min( s.wheel.caustic * cst, 1.0f ) );
+				const float cover = clamp01( std::max( dyeCover, rimCover ) ) * gate;
 
+				float out[ 4 ];
+				if( s.mode == LampMode::Matte )
+				{
+					//Over against nothing, and so the one mode the generator
+					//and the filter render identically. Premultiplied.
+					for( int c = 0; c < 3; ++c )
+						out[ c ] = col[ c ] * cover;
+					out[ 3 ] = cover;
+				}
+				else if( s.hasClip && s.mode == LampMode::Over )
+				{
 					for( int c = 0; c < 3; ++c )
 						out[ c ] = clip[ c ] * ( 1.0f - cover ) + col[ c ] * cover;
 					out[ 3 ] = clamp01( clip[ 3 ] * ( 1.0f - cover ) + cover );
@@ -453,11 +461,9 @@ public:
 		temperature = fetchDoubleParam( kParamTemp );
 		gate       = fetchDoubleParam( kParamGate );
 		gateSoft   = fetchDoubleParam( kParamGateSoft );
+		mode = fetchChoiceParam( kParamMode );
 		if( overInput )
-		{
-			mode = fetchChoiceParam( kParamMode );
-			mix  = fetchDoubleParam( kParamMix );
-		}
+			mix = fetchDoubleParam( kParamMix );
 		preset = fetchChoiceParam( kParamPreset );
 	}
 
@@ -635,13 +641,12 @@ private:
 
 		setup.hasClip = overInput && src != nullptr;
 
+		int modeValue = 0;
+		mode->getValueAtTime( t, modeValue );
+		setup.mode = static_cast< LampMode >( ModeFromParam( static_cast< float >( modeValue ) ) );
+
 		if( overInput )
-		{
-			int modeValue = 0;
-			mode->getValueAtTime( t, modeValue );
-			setup.mode = static_cast< LampMode >( ModeFromParam( static_cast< float >( modeValue ) ) );
-			setup.mix  = static_cast< float >( at( mix, t ) );
-		}
+			setup.mix = static_cast< float >( at( mix, t ) );
 
 		setup.premultiplied =
 			setup.hasClip && srcClip != nullptr
@@ -959,25 +964,32 @@ void describeParams( OFX::ImageEffectDescriptor& desc, bool lampVariant )
 	defineSlider( desc, page, kParamGateSoft, "Gate Soft", "How soft the gate's edge is.", 0.20 )
 		->setParent( *lampGroup );
 
-	if( lampVariant )
 	{
 		OFX::GroupParamDescriptor* output = desc.defineGroupParam( "Output" );
 		output->setLabels( "Output", "Output", "Output" );
 
+		//Mode is on BOTH variants, unlike Mix. Three of its four entries are
+		//about the clip and do nothing without one -- but Matte is not, and
+		//it is the reason the generator carries this at all. Matching the
+		//FFGL build, where the two plugins have always shared one parameter
+		//list.
 		OFX::ChoiceParamDescriptor* modeParam = desc.defineChoiceParam( kParamMode );
 		modeParam->setLabels( "Mode", "Mode", "Mode" );
 		modeParam->setHint( "Project puts the clip where the lamp was and looks through the oil "
 		                    "at it; Over lights the oil itself and lays it on the clip; "
 		                    "Colourise takes only the clip's brightness and lets the dye supply "
-		                    "the colour." );
+		                    "the colour; Matte drops the clip entirely and gives you the lit oil "
+		                    "over transparency, to key or to lay over something else. Only Matte "
+		                    "does anything without a clip." );
 		for( int i = 0; i < int( LampMode::Count ); ++i )
 			modeParam->appendOption( LampModeName( LampMode( i ) ) );
 		modeParam->setDefault( 0 );
 		modeParam->setParent( *output );
 		page->addChild( *modeParam );
 
-		defineSlider( desc, page, kParamMix, "Mix", "Dry/wet with the untouched clip.", 1.0 )
-			->setParent( *output );
+		if( lampVariant )
+			defineSlider( desc, page, kParamMix, "Mix", "Dry/wet with the untouched clip.", 1.0 )
+				->setParent( *output );
 	}
 
 	// The Stoatworks About block: a read-only credit line and one push button

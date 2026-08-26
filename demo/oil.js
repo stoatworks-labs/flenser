@@ -123,7 +123,7 @@ const TAU = 6.28318530717958647692;
 const GOLDEN_ANGLE = 2.39996322972865332;
 
 export const PALETTE_NAMES = ['Aniline', 'Ink', 'Sodium', 'Spectrum', 'Duotone', 'Mono'];
-export const LAMP_MODE_NAMES = ['Project', 'Over', 'Colourise'];
+export const LAMP_MODE_NAMES = ['Project', 'Over', 'Colourise', 'Matte'];
 
 /** The one palette that is not a table: Spectrum is hashed anywhere on the wheel. */
 const SPECTRUM = 3;
