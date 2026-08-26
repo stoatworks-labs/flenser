@@ -19,10 +19,16 @@ hot spot, a colour temperature and a round gate.
 > Resolume build, **0 of 921,600** through the OpenFX one. All 33 controls reach the
 > picture, in both bundles.
 >
-> **It has never been loaded into Resolume, and never into Resolve.** Everything above
-> runs the plugin directly, or runs the OpenFX bundle through a test host. The Windows
-> and Linux builds have never been run. Check it in your own rig before trusting it in
-> a show.
+> **What has now been checked in a real host, and what has not.** As of v0.1.2 both
+> Resolume plugins load and register in Arena 7.27.1 on Windows — verified with the
+> build this release ships, on a machine with no graphics card, so it says the plugin
+> is correct and nothing at all about how fast it is. It has still never been loaded
+> into Resolve, and the Linux build has never been run. Everything else above runs the
+> plugin directly or runs the OpenFX bundle through a test host.
+>
+> Two of the things that were wrong before v0.1.2 were found by somebody running it on
+> a real rig and telling us, not by any of the measurements above. Check it in your own
+> rig before trusting it in a show.
 
 Thirty-three controls, in seven groups. This is what each one does and, more
 usefully, what it does *with* the others.
