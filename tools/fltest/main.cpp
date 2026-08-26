@@ -22,6 +22,8 @@
 		fltest --cells                  the wheel as JSON, for the demo checker
 		fltest --field                  GLSL against C++, over the whole space
 		fltest --null                   a clear wheel does not touch the clip
+		fltest --continuity             moving Speed or Spin does not move the picture
+		fltest --matte                  the cutout mode, in both builds
 		fltest --presets                every preset survives every host
 		fltest --card /tmp/card.png     the test card on its own
 		fltest --bench                  the render cost
@@ -627,9 +629,15 @@ int dumpCells()
 	spectrum.drift     = 0.3f;
 	spectrum.seed      = 4242;
 
-	const Case cases[] = {
+	Case cases[] = {
 		{ "base", base }, { "spun", spun }, { "inked", inked }, { "spectrum", spectrum }
 	};
+
+	//These wheels are built by hand rather than driven by a clock, so they
+	//carry a time and a rate and no phase. The demo's port does the same
+	//thing at the same point, which is what keeps the two comparable.
+	for( Case& c : cases )
+		SetFreeRunningPhases( c.wheel );
 
 	std::printf( "  \"wheels\": {\n" );
 	for( size_t c = 0; c < sizeof( cases ) / sizeof( cases[ 0 ] ); ++c )
@@ -1188,6 +1196,222 @@ double benchAt( FlenserPlugin& plugin, bool overInput, int width, int height, in
 	return std::chrono::duration< double, std::milli >( end - start ).count() / frames;
 }
 
+//---------------------------------------------------------------------------
+// --continuity: moving a rate control does not move the picture.
+//
+// Speed and Spin set a RATE. Changing a rate has to change what happens next
+// and nothing else -- if the phase is `time * rate`, changing the rate
+// rescales the entire history, and the wheel jumps to wherever that lands.
+// Five seconds in it is a visible lurch; an hour into a show a small nudge is
+// worth hundreds of turns and the arrangement is simply gone. Reported from a
+// live rig as "unusable in performance" (#1), and the same defect orrery had.
+//
+// The assertion is exact rather than a threshold, which is what makes it
+// worth having: on the frame the control moves, the anchor carries the phase
+// forward and the new rate has had zero seconds to act, so that frame must be
+// **bit-identical** to the frame that would have been drawn had nothing been
+// touched. Then the frame after it must differ, or the control is dead.
+//
+// Both halves are needed. The first alone passes if the control does nothing
+// at all; the second alone passes on the very code this replaces.
+//---------------------------------------------------------------------------
+int runContinuityCheck( int width, int height )
+{
+	constexpr double kFps  = 60.0;
+	constexpr int kLead    = 300;///< 5 s at 60 fps, so a rescale is unmissable
+
+	// Motion the change could disturb, and nothing else moving that might
+	// mask a jump: no boil, no churn, no feedback.
+	struct Setting
+	{
+		const char* name;
+		float value;
+	};
+	const Setting bed[] = {
+		{ "Drift", 0.8f }, { "Boil", 0.0f }, { "Churn", 0.0f }, { "Simmer", 0.0f },
+	};
+
+	struct Case
+	{
+		const char* control;
+		float from;
+		float to;
+	};
+	//Both are rates, and Spin is bipolar -- 0.5 is its null, so this is a
+	//change of direction as well as of size.
+	const Case cases[] = {
+		{ "Speed", 0.20f, 0.62f },
+		{ "Spin", 0.60f, 0.42f },
+	};
+
+	// One run of `frames` frames, optionally moving `control` to `to` at
+	// frame `changeAt`. A fresh plugin every time: the anchors are state, and
+	// reusing one would carry the previous run's into this one.
+	auto run = [ & ]( const Case& c, int frames, int changeAt ) {
+		FlenserPlugin plugin( false );
+		std::string error;
+		for( const Setting& b : bed )
+			applySetting( plugin, std::string( b.name ) + "=" + std::to_string( b.value ), error );
+		applySetting( plugin, std::string( c.control ) + "=" + std::to_string( c.from ), error );
+
+		const std::function< void( int ) > perFrame = [ & ]( int frame ) {
+			if( changeAt >= 0 && frame == changeAt )
+			{
+				std::string e;
+				applySetting( plugin, std::string( c.control ) + "=" + std::to_string( c.to ), e );
+			}
+		};
+		return renderFrames( plugin, false, width, height, frames, kFps, &perFrame );
+	};
+
+	int failures = 0;
+	for( const Case& c : cases )
+	{
+		const std::vector< unsigned char > undisturbed = run( c, kLead + 1, -1 );
+		const std::vector< unsigned char > atTheChange = run( c, kLead + 1, kLead );
+		const std::vector< unsigned char > afterwards  = run( c, kLead + 2, kLead );
+		const std::vector< unsigned char > wouldHaveBeen = run( c, kLead + 2, -1 );
+
+		size_t jumped = 0;
+		for( size_t i = 0; i < undisturbed.size() && i < atTheChange.size(); ++i )
+			if( undisturbed[ i ] != atTheChange[ i ] )
+				++jumped;
+
+		size_t moved = 0;
+		for( size_t i = 0; i < afterwards.size() && i < wouldHaveBeen.size(); ++i )
+			if( afterwards[ i ] != wouldHaveBeen[ i ] )
+				++moved;
+
+		if( jumped != 0 )
+		{
+			std::printf( "continuity: %s MOVED THE PICTURE -- %zu of %zu bytes differ on the frame "
+			             "it changed\n",
+			             c.control, jumped, undisturbed.size() );
+			++failures;
+		}
+		else if( moved == 0 )
+		{
+			std::printf( "continuity: %s changed nothing at all on the frame after -- dead, not "
+			             "continuous\n",
+			             c.control );
+			++failures;
+		}
+		else
+		{
+			std::printf( "continuity: %s holds the picture on the frame it moves, and %zu of %zu "
+			             "bytes differ one frame later\n",
+			             c.control, moved, afterwards.size() );
+		}
+	}
+
+	return failures == 0 ? 0 : 1;
+}
+
+//---------------------------------------------------------------------------
+// --matte: the cutout mode does what it says.
+//
+// Matte is Over composited against nothing, so the clip plays no part in it.
+// Two things follow, and both are worth pinning down because both are the
+// reason the mode was added (#2):
+//
+//   * the generator and the effect render it IDENTICALLY -- it is the only
+//     mode of which that is true, and it is what lets one set of numbers
+//     document both plugins;
+//   * where the oil covers nothing the pixel is transparent AND black, since
+//     the output is premultiplied. A host that ignores alpha still gets the
+//     black field somebody asked for.
+//
+// Without the second check the mode could quietly become "opaque black
+// everywhere", which keys as nothing at all and looks fine in a screenshot.
+//
+// **One quantisation step of slack on that second check, and only one.** The
+// lamp is brighter than white where a caustic lands, so `col` exceeds 1 and a
+// pixel whose coverage rounds to alpha 0 in eight bits can still round its
+// premultiplied colour up to 1/255. That is the arithmetic being right at the
+// edge of the format, not a premultiplication error -- which would leave the
+// dye's full colour standing at alpha 0, hundreds of steps away, and is what
+// this still catches.
+//---------------------------------------------------------------------------
+int runMatteCheck( int width, int height )
+{
+	const int mode = static_cast< int >( LampMode::Matte );
+
+	auto render = [ & ]( bool overInput ) {
+		FlenserPlugin plugin( overInput );
+		std::string error;
+		applySetting( plugin, "Mode=" + std::to_string( mode ), error );
+		return renderFrames( plugin, overInput, width, height, 2, 60.0 );
+	};
+
+	const std::vector< unsigned char > generator = render( false );
+	const std::vector< unsigned char > effect    = render( true );
+
+	int failures = 0;
+
+	size_t differ = 0;
+	for( size_t i = 0; i < generator.size() && i < effect.size(); ++i )
+		if( generator[ i ] != effect[ i ] )
+			++differ;
+
+	if( differ != 0 )
+	{
+		std::printf( "matte: the generator and the effect disagree -- %zu of %zu bytes\n",
+		             differ, generator.size() );
+		++failures;
+	}
+	else
+	{
+		std::printf( "matte: the generator and the effect are identical, %zu bytes\n",
+		             generator.size() );
+	}
+
+	// Premultiplied: every fully transparent pixel must be black, and some of
+	// the frame must be transparent or the mode is not cutting anything out.
+	constexpr unsigned char kQuantisationSlack = 1;
+
+	size_t clear   = 0;
+	size_t lit     = 0;
+	size_t dirty   = 0;
+	unsigned char worst = 0;
+	for( size_t i = 0; i + 3 < generator.size(); i += 4 )
+	{
+		if( generator[ i + 3 ] == 0 )
+		{
+			++clear;
+			const unsigned char brightest =
+				std::max( { generator[ i ], generator[ i + 1 ], generator[ i + 2 ] } );
+			worst = std::max( worst, brightest );
+			if( brightest > kQuantisationSlack )
+				++dirty;
+		}
+		else if( generator[ i + 3 ] == 255 )
+		{
+			++lit;
+		}
+	}
+
+	if( dirty != 0 )
+	{
+		std::printf( "matte: %zu transparent pixels carry colour up to %u/255 -- not "
+		             "premultiplied\n",
+		             dirty, static_cast< unsigned >( worst ) );
+		++failures;
+	}
+	else if( clear == 0 )
+	{
+		std::printf( "matte: nothing is transparent -- the mode cut nothing out\n" );
+		++failures;
+	}
+	else
+	{
+		std::printf( "matte: %zu of %zu pixels fully transparent and black to within %u/255, "
+		             "%zu fully opaque\n",
+		             clear, generator.size() / 4, static_cast< unsigned >( worst ), lit );
+	}
+
+	return failures == 0 ? 0 : 1;
+}
+
 int runBench( bool overInput, int frames, double fps )
 {
 	struct Size
@@ -1471,6 +1695,8 @@ int main( int argc, char** argv )
 	bool wantCells   = false;
 	bool wantField   = false;
 	bool wantNull    = false;
+	bool wantContinuity = false;
+	bool wantMatte   = false;
 	bool wantPresets = false;
 	bool wantBench   = false;
 	bool wantPipe    = false;
@@ -1516,6 +1742,10 @@ int main( int argc, char** argv )
 			wantField = true;
 		else if( argument == "--null" )
 			wantNull = true;
+		else if( argument == "--continuity" )
+			wantContinuity = true;
+		else if( argument == "--matte" )
+			wantMatte = true;
 		else if( argument == "--presets" )
 			wantPresets = true;
 		else if( argument == "--bench" )
@@ -1569,6 +1799,12 @@ int main( int argc, char** argv )
 
 	if( wantNull )
 		status |= runNullCheck( width, height );
+
+	if( wantContinuity )
+		status |= runContinuityCheck( width, height );
+
+	if( wantMatte )
+		status |= runMatteCheck( width, height );
 
 	if( wantPresets )
 		status |= runPresetTest();

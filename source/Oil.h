@@ -115,12 +115,22 @@ enum class Palette
 	Count
 };
 
-/// What the incoming clip is, in the effect build. The generator ignores it.
+/// What the incoming clip is, in the effect build.
+///
+/// The first three are about the clip, so the generator ignores them. **Matte
+/// is not** -- it is the one mode that has nothing of the clip in it, which is
+/// exactly why it means the same thing in both builds and why the generator
+/// honours it.
+///
+/// Appended rather than inserted, and `Mode` stores the raw index: adding an
+/// entry at the end leaves every saved composition and every factory preset
+/// reading the mode they were saved with.
 enum class LampMode
 {
 	Project = 0,///< the clip IS the lamp: it is seen through the oil
 	Over,       ///< the oil is lit by its own lamp and sits over the clip
 	Colourise,  ///< the clip's brightness drives the lamp; the dye is all the colour
+	Matte,      ///< the lit oil over transparency: the wheel as a cutout
 	Count
 };
 
@@ -201,8 +211,15 @@ struct Wheel
 	//-- the frame -------------------------------------------------------
 	float aspect = 16.0f / 9.0f;///< width / height
 
-	/// Seconds, for the cell orbits and the wheel's rotation.
+	/// Seconds. The clock the phases below are derived from; `CellAt` itself
+	/// never reads it.
 	float time = 0.0f;
+
+	/// Turns of cell orbit, and turns of wheel rotation. **Not** `time *
+	/// speed` and `time * spin` — see `SetFreeRunningPhases` for when they
+	/// are exactly that, and `Flenser.h` for when they are not and why.
+	float orbitPhase = 0.0f;
+	float spinPhase  = 0.0f;
 
 	/// Seconds of *boil*, which is not the same number.
 	///
@@ -232,6 +249,21 @@ struct Wheel
 /// shaken; Scatter blends between the two.
 //---------------------------------------------------------------------------
 Cell CellAt( int index, const Wheel& wheel );
+
+//---------------------------------------------------------------------------
+/// Fill `orbitPhase` and `spinPhase` as a pure function of `time` — the
+/// replayable form, `time * rate`.
+///
+/// Right wherever a frame must be reproducible from its timestamp alone: the
+/// OpenFX builds, which render out of order and re-render on every seek, the
+/// browser demo, which is scrubbable, and the offline cell dump.
+///
+/// **Wrong in a live host**, where the operator moves Speed and Spin while
+/// watching. `time * rate` rescales the whole history, so an hour into a
+/// composition a small nudge is worth hundreds of turns and the wheel
+/// teleports. The FFGL build anchors the phases instead — `Flenser.h`.
+//---------------------------------------------------------------------------
+void SetFreeRunningPhases( Wheel& wheel );
 
 //===========================================================================
 // The per-pixel stage. Everything below this line is mirrored in

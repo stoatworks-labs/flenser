@@ -123,6 +123,7 @@ const char* LampModeName( LampMode value )
 	case LampMode::Project: return "Project";
 	case LampMode::Over: return "Over";
 	case LampMode::Colourise: return "Colourise";
+	case LampMode::Matte: return "Matte";
 	default: return "Project";
 	}
 }
@@ -153,6 +154,12 @@ void HsvToRgb( float h, float s, float v, float& outR, float& outG, float& outB 
 }
 
 //---------------------------------------------------------------------------
+void SetFreeRunningPhases( Wheel& wheel )
+{
+	wheel.orbitPhase = wheel.time * wheel.speed;
+	wheel.spinPhase  = wheel.time * wheel.spin;
+}
+
 Cell CellAt( int index, const Wheel& wheel )
 {
 	Cell cell;
@@ -189,7 +196,7 @@ Cell CellAt( int index, const Wheel& wheel )
 	// wheel a period; a real dish never comes back to where it was, and a
 	// projection that loops every four seconds is the one thing an audience
 	// does notice.
-	const float t     = wheel.time * wheel.speed;
+	const float t     = wheel.orbitPhase;
 	const float f1    = 0.55f + 0.90f * Unit( hOrbit );
 	const float f2    = 0.50f + 1.10f * Unit( hDye );
 	const float phase = Unit( hPos );
@@ -198,7 +205,7 @@ Cell CellAt( int index, const Wheel& wheel )
 	py += wheel.drift * std::sin( kTau * ( f2 * t + phase * 1.37f + 0.21f ) );
 
 	//-- the wheel turning in its holder ---------------------------------
-	const float a  = kTau * wheel.spin * wheel.time;
+	const float a  = kTau * wheel.spinPhase;
 	const float ca = std::cos( a );
 	const float sa = std::sin( a );
 

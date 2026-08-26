@@ -61,6 +61,13 @@ and it buys three things a simulation cannot:
 
 `Simmer` is the deliberate exception; see below.
 
+**The FFGL build's rate phases are a second, smaller exception, and always
+were.** Boil is integrated there, and since v0.1.2 Speed and Spin are anchored,
+so in a live host the wheel at t=500 also depends on when those controls were
+moved. The OpenFX build and the demo keep every one of them a pure function of
+the clock, which is what preserves the three properties above where they
+actually matter. See "The rate phases".
+
 ### 3. Per-cell on the CPU, per-pixel on both
 
 `CellAt` in `Oil.cpp` takes an index and the wheel's settings and returns where
@@ -350,7 +357,7 @@ reported **255/255 on a plugin that was behaving perfectly**, and the two PNGs
 
 ---
 
-## The two real differences between the builds
+## The real differences between the builds
 
 ### Simmer
 
@@ -377,20 +384,56 @@ Two properties keep it honest where it does exist:
   is a white screen four hundred frames later, in the middle of a show, and no
   amount of care with the default value prevents that; a ceiling does.
 
-### The boil phase
+### The rate phases
 
-The FFGL build **integrates** the Boil rate, so that nudging the control live
-changes what happens next instead of rescaling the whole history and jumping
-the noise field somewhere else — worst at the moment somebody is watching the
-control they are moving.
+Boil, Speed and Spin all set a **rate**, and a rate control has to change what
+happens next without moving what is already drawn.
 
-The OpenFX build uses `time * boil`, because there is no previous frame to have
-integrated from and a deterministic frame matters more in a host that renders
-them out of order. The browser demo does the same, and says so.
+The FFGL build does that for all three. Boil is **integrated** frame by frame.
+Speed and Spin are **anchored** — `phase + (now - clock) * rate`, carried
+forward once per rate *change* rather than once per frame, so a long session
+cannot accumulate rounding into a drift. The anchors start at clock zero and
+phase zero, which makes the arithmetic identical to `time * rate` until an
+operator touches a control: that is what lets the rendered-frame tests and
+`sweep.py` measure the same thing they always did.
 
-The cell orbits are **not** integrated in either build: an orbit is a closed
-loop, and rescaling its phase moves a cell along a path it was going to travel
-anyway. The distinction is worth keeping straight.
+The OpenFX build uses `time * rate` for all three, through
+`SetFreeRunningPhases`. There is no previous frame to have integrated from and
+a deterministic frame matters more in a host that renders them out of order.
+The browser demo does the same, and says so — it is scrubbable for the same
+reason.
+
+**This section used to say the opposite about the orbits**, on the reasoning
+that an orbit is a closed loop and rescaling its phase moves a cell along a
+path it was going to travel anyway. That is true and it is beside the point:
+it moves the cell to a *different point* on that path, and an hour into a
+composition a small nudge to Speed is worth hundreds of turns. It was worse
+than the boil case, because the two orbit frequencies are deliberately
+incommensurate — the trajectory never repeats, so there is no old position to
+land back on. Reported from a live rig as unusable in performance (#1), and it
+is the same defect orrery shipped in its #6.
+
+`fltest --continuity` is the guard, and its assertion is exact rather than a
+threshold: on the frame a rate control moves, the new rate has had zero seconds
+to act, so that frame must be bit-identical to the frame that would have been
+drawn untouched — and the frame after it must differ, or the control is dead.
+Both halves are needed; the first alone passes if the control does nothing.
+
+### Matte, which is the one mode that is not a difference
+
+`Mode` has four settings. Project, Over and Colourise are about the incoming
+clip, so the generator ignores them. **Matte is not about the clip at all** —
+it is Over composited against nothing — so both builds honour it, and it is
+the only mode that renders bit-identically in the generator and the effect.
+`fltest --matte` asserts exactly that, along with the output being genuinely
+premultiplied: where the oil covers nothing the pixel is transparent *and*
+black, to within the one quantisation step a brighter-than-white lamp can
+push into an eight-bit channel.
+
+It exists because a Flenser source layer could not mask anything: its alpha
+was the gate, so it was an opaque rectangle with a near-white field (#2).
+`Mode` stores the raw index and Matte was **appended**, so every saved
+composition and every factory preset still reads the mode it was saved with.
 
 ---
 

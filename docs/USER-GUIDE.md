@@ -39,9 +39,10 @@ the four that decide what the wheel is. Everything else is adjustment.
 | the wheel on its own | **Flenser** (a source) | **Flenser** (a generator) |
 | the clip as the lamp | **Flenser Lamp** (an effect) | **Flenser Lamp** (a filter) |
 
-They declare the same controls and read the same presets. The only two that do
-not apply to the generator are **Mode** and **Mix**, which are about a clip it
-does not have.
+They declare the same controls and read the same presets. **Mix** does not apply
+to the generator, and neither do three of **Mode**'s four settings, because they
+are about a clip it does not have. The fourth, **Matte**, is not about the clip
+at all and both plugins honour it.
 
 ---
 
@@ -242,17 +243,36 @@ control.
 
 ---
 
-## Output — Flenser Lamp only
+## Output
 
-**Mode** — what the clip is.
+**Mode** — what the clip is, except for the last one.
 
 | | |
 | --- | --- |
 | **Project** | the clip goes where the lamp was, and you are looking through the oil at it. The default, and the one the plugin is named for. |
 | **Over** | the oil is lit by its own lamp and sits on top of the clip. |
 | **Colourise** | only the clip's brightness is used, and the dye supplies all the colour. |
+| **Matte** | no clip at all: the lit oil over transparency. Works in **both** plugins. |
 
-**Mix** — dry/wet against the untouched clip.
+**Matte** is the one to reach for if you want the wheel to mask something else.
+The oil is lit by its own lamp exactly as in Over, but instead of being laid on
+a clip it is laid on nothing — so everywhere the oil does not cover, the picture
+is transparent, and because the output is premultiplied it is black there too. A
+host that ignores alpha still gets the black field; one that does not can key it,
+put it on a layer above other visuals, or run it through a blend mode.
+
+It is the only mode that renders identically in the generator and the effect,
+which is worth knowing: if you are using Matte, it does not matter which of the
+two plugins you reached for.
+
+Two things it is not. It is not a way to get *Over* out of the generator —
+Over needs a clip and the generator has none, and Matte is what you would use
+instead. And it is not an alpha the wheel's own shape gives you for free: what
+sets the transparency is how much light each pixel actually intercepts, so a
+pale dye at low Density cuts a fainter matte than a saturated one does. Turn
+Density up if you want a harder edge.
+
+**Mix** — dry/wet against the untouched clip. **Flenser Lamp only.**
 
 ---
 

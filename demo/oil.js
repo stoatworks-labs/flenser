@@ -123,7 +123,7 @@ const TAU = 6.28318530717958647692;
 const GOLDEN_ANGLE = 2.39996322972865332;
 
 export const PALETTE_NAMES = ['Aniline', 'Ink', 'Sodium', 'Spectrum', 'Duotone', 'Mono'];
-export const LAMP_MODE_NAMES = ['Project', 'Over', 'Colourise'];
+export const LAMP_MODE_NAMES = ['Project', 'Over', 'Colourise', 'Matte'];
 
 /** The one palette that is not a table: Spectrum is hashed anywhere on the wheel. */
 const SPECTRUM = 3;
@@ -165,6 +165,22 @@ export function hsvToRgb(h, s, v) {
  * Returns `[x, y, radius, r, g, b]` — the same six numbers, in the same order,
  * that `fltest --cells` prints.
  */
+/**
+ * `Oil.cpp`'s `SetFreeRunningPhases`: the orbit and spin phases as a pure
+ * function of the clock, `time * rate`.
+ *
+ * The Resolume build ANCHORS these instead, so that an operator moving Speed
+ * or Spin changes what happens next rather than rescaling the whole history
+ * and teleporting the wheel. This page is scrubbable, which is the same trade
+ * the OpenFX build makes and for the same reason — the identical note already
+ * applies to the boil phase below.
+ */
+export function setFreeRunningPhases(wheel) {
+  wheel.orbitPhase = wheel.time * wheel.speed;
+  wheel.spinPhase = wheel.time * wheel.spin;
+  return wheel;
+}
+
 export function cellAt(index, wheel) {
   const count = Math.max(wheel.cells, 1);
   const seed = Math.max(wheel.seed, 0) >>> 0;
@@ -190,7 +206,7 @@ export function cellAt(index, wheel) {
   let py = mix(spiralR * Math.sin(spiralA), swarmR * Math.sin(swarmA), wheel.scatter);
 
   // A closed orbit per cell, on two incommensurate frequencies.
-  const t = wheel.time * wheel.speed;
+  const t = wheel.orbitPhase;
   const f1 = 0.55 + 0.9 * unit(hOrbit);
   const f2 = 0.5 + 1.1 * unit(hDye);
   const phase = unit(hPos);
@@ -198,7 +214,7 @@ export function cellAt(index, wheel) {
   px += wheel.drift * Math.cos(TAU * (f1 * t + phase));
   py += wheel.drift * Math.sin(TAU * (f2 * t + phase * 1.37 + 0.21));
 
-  const a = TAU * wheel.spin * wheel.time;
+  const a = TAU * wheel.spinPhase;
   const ca = Math.cos(a);
   const sa = Math.sin(a);
 

@@ -418,15 +418,29 @@ void main()
 	col = max( col, vec3( 0.0 ) );
 
 	//---- out through the gate -----------------------------------------
-	if( HasClip == 1 && Mode == 1 )
-	{
-		//Over: the lit oil sits on the clip. Cover is how much of the light
-		//this pixel actually intercepts -- the dye it has been through, or
-		//the rim treatment, whichever is doing more.
-		float dyeCover = 1.0 - luma( f.t );
-		float rimCover = max( Meniscus * men, min( Caustic * cst, 1.0 ) );
-		float cover    = clamp( max( dyeCover, rimCover ), 0.0, 1.0 ) * gate;
+	//
+	//Cover is how much of the light this pixel actually intercepts -- the dye
+	//it has been through, or the rim treatment, whichever is doing more. Over
+	//composites with it and Matte IS it, so it is worth the luma in every
+	//mode rather than duplicated in two branches.
+	float dyeCover = 1.0 - luma( f.t );
+	float rimCover = max( Meniscus * men, min( Caustic * cst, 1.0 ) );
+	float cover    = clamp( max( dyeCover, rimCover ), 0.0, 1.0 ) * gate;
 
+	if( Mode == 3 )
+	{
+		//Matte: the lit oil over transparency. Over against nothing, so the
+		//clip plays no part -- which makes this the one mode that renders
+		//identically in the generator and the effect.
+		//
+		//Premultiplied, so where the oil covers nothing the pixel is
+		//transparent AND black. A host that ignores alpha still gets the
+		//black field somebody keying this would have asked for.
+		fragColor = vec4( col * cover, cover );
+	}
+	else if( HasClip == 1 && Mode == 1 )
+	{
+		//Over: the lit oil sits on the clip.
 		//Premultiplied destination, straight source: the standard over.
 		fragColor = vec4( clip.rgb * ( 1.0 - cover ) + col * cover,
 		                  clamp( clip.a * ( 1.0 - cover ) + cover, 0.0, 1.0 ) );

@@ -1,5 +1,8 @@
 #include "Controls.h"
 
+//For LampMode::Count, so the clamp cannot be left behind when a mode is added.
+#include "Oil.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -216,7 +219,7 @@ int PaletteFromParam( float optionValue )
 int ModeFromParam( float optionValue )
 {
 	const int v = static_cast< int >( std::lround( optionValue ) );
-	return ( v < 0 || v > 2 ) ? 0 : v;
+	return ( v < 0 || v >= static_cast< int >( LampMode::Count ) ) ? 0 : v;
 }
 
 } // namespace flenser
