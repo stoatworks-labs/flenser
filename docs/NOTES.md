@@ -43,14 +43,14 @@ corner of a 21:9 frame is 2.54 wheel units out. `fltest --null` depends on it.
 
 ## What has not been done
 
-- ☠️ **Never loaded into Resolume, and never loaded into Resolve.** Everything
-  in the "verified" list in `AGENTS.md` runs the plugin class directly, or runs
-  the OpenFX bundle through `ofxprobe`. Neither is a host.
-- ☠️ **No Windows build has ever been RUN.** It builds — the release workflow's
-  windows-latest job produced the two DLLs, the OpenFX bundle and an NSIS
-  installer on the v0.1.0 tag — and nothing has ever loaded one into Resolume
-  on Windows. Building and running are different claims and this is the one
-  that is unmet.
+- ☠️ **Never loaded into Resolve.** The OpenFX half of the "verified" list in
+  `AGENTS.md` runs the bundle through `ofxprobe`, which is not a host.
+- **Both Resolume plugins DO load and register, in Arena 7.27.1 on Windows, as
+  of v0.1.2.** Checked with the build that release ships, on a machine with no
+  graphics card — so it says the plugin is correct and nothing about its speed.
+  The release workflow's windows-latest job produces the two DLLs, the OpenFX
+  bundle and an NSIS installer; the FFGL DLLs are now the ones that have been
+  run, and the Windows OpenFX bundle still has not.
 - **The Linux OpenFX build LOADS, and has never rendered.** Both jobs ran on the
   v0.1.0 tag: the bundle built in AlmaLinux 8 asks for nothing newer than
   GLIBC_2.28, and Rocky 8 `dlopen`s it and gets `OfxGetNumberOfPlugins -> 2`

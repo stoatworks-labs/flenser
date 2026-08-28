@@ -7,10 +7,13 @@
 > compares the two across 1.6 million values over every control, finding no
 > disagreement past 5e-4. Both builds are separately proved to leave a picture
 > exactly as they found it when the wheel is clear: 0 of 230,400 bytes differ
-> through the Resolume build, 0 of 921,600 through the OpenFX one. **It has not
-> yet been run in Resolume or in Resolve** — see the "what is actually
-> verified" section of [AGENTS.md](AGENTS.md), and check it in your own rig
-> before trusting it in a show.
+> through the Resolume build, 0 of 921,600 through the OpenFX one. As of v0.1.2
+> **both Resolume plugins load and register in Arena 7.27.1 on Windows** —
+> checked with the build that release ships, on a machine with no graphics card,
+> so it says the plugin is correct and nothing about how fast it is. **It has
+> still never been loaded into Resolve**, and the Linux build has never been
+> run. See the "what is actually verified" section of [AGENTS.md](AGENTS.md),
+> and check it in your own rig before trusting it in a show.
 
 A liquid light show, as a plugin.
 
