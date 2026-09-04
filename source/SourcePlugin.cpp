@@ -37,7 +37,7 @@ static CFFGLPluginInfo PluginInfo(
 	0,                                                          // Plugin major version number
 	1,                                                          // Plugin minor version number
 	FF_SOURCE,                                                  // Plugin type
-	"Oil, water and dye on an overhead projector",              // Plugin description
+	"Oil, water and dye on an overhead projector.\n\nOil in dyed water does not mix. It forms rounded cells that press on each other and join with a fillet where they meet, and each cell is a dye filter - so overlapping cells multiply rather than add, and cyan over magenta is blue, not white.\n\nThe meniscus at every edge is a lens: it displaces what is behind it, splits it by wavelength, and throws a bright caustic just inside a dark rim. Behind all of it is a Fresnel condenser with a visible hot spot, a colour temperature and a round gate.\n\nStart from a Preset, at the bottom.",// Plugin description
 	"Flenser FFGL source"                                       // About
 );
 
