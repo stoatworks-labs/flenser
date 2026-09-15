@@ -5,6 +5,10 @@ glasses on an overhead projector — as an FFGL source and effect for
 [Resolume](https://resolume.com) Arena and Avenue, and an OpenFX generator and filter
 for DaVinci Resolve, Nuke, Natron and Vegas.
 
+![Four looks rendered by the plugin's own offline harness, which drives the real plugin class through a headless GL context — not a Resolume screen capture.](hero.png)
+
+*Four looks rendered by the plugin's own offline harness, which drives the real plugin class through a headless GL context — not a Resolume screen capture. Clockwise from top left: the wheel seen through a projector's own round gate; the Ink palette, where the crossings go dark because the dyes multiply; a clip put where the lamp was; and the same clip with the dye taken out, so all that is left is the lens at each cell's edge.*
+
 Cells of oil press on each other and join with a fillet. Each one is a dye filter, so
 where two cross they **multiply** — cyan over magenta is blue, not white. The meniscus
 at every edge is a lens that displaces what is behind it, splits it by wavelength, and
