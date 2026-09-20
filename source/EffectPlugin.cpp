@@ -31,7 +31,7 @@ public:
 static CFFGLPluginInfo PluginInfo(
 	PluginFactory< FlenserEffect >,                             // Create method
 	"FL02",                                                     // Plugin unique ID of maximum length 4
-	"Flenser Lamp",                                             // Plugin name
+	"SW Flenser Lamp",                                          // Plugin name
 	2,                                                          // API major version number
 	1,                                                          // API minor version number
 	0,                                                          // Plugin major version number

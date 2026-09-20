@@ -31,7 +31,7 @@ public:
 static CFFGLPluginInfo PluginInfo(
 	PluginFactory< FlenserSource >,                             // Create method
 	"FL01",                                                     // Plugin unique ID of maximum length 4
-	"Flenser",                                                  // Plugin name
+	"SW Flenser",                                               // Plugin name
 	2,                                                          // API major version number
 	1,                                                          // API minor version number
 	0,                                                          // Plugin major version number
