@@ -830,6 +830,10 @@ const gateDisplay = (v) => {
 
 mountDemo({
   name: 'Flenser',
+  // The FFGL types this repo registers (EffectPlugin.cpp and SourcePlugin.cpp),
+  // for the kit banner's closing sentence, which said "effect" alone until
+  // 2026-09-24.
+  kind: ['effect', 'source'],
   pluginId: 'FL01',
   tagline:
     'Oil, water, alcohol and dye between two watch glasses on an overhead projector. The cells are dye filters, so where they overlap they multiply — cyan over magenta is blue, not white.',
