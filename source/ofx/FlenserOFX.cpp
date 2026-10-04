@@ -60,7 +60,9 @@ constexpr const char* kPluginDescription =
 	"on its own and scrubbing shows the wheel at that moment.\n\n"
 	"Note: the Simmer control in the Resolume build is not here. It is a "
 	"feedback buffer, and this host renders frames out of order.\n\n"
-	"Fusion reports no frame rate; there, time-based controls assume 24 fps.\n\n"
+	"Resolve's Fusion page reports the frame rate on the effect but not on its "
+	"clips; the plugin reads the effect's, and assumes 24 fps only where a host "
+	"reports none.\n\n"
 	"https://stoatworks-labs.com";
 
 constexpr const char* kParamCells      = "cells";
@@ -422,17 +424,17 @@ private:
 	}
 };
 
-/// The frame rate when the host reports none: 24, Resolve's default timeline
-/// rate. Resolve's Fusion page reports no frame rate anywhere.
+/// The frame rate when the host reports none anywhere: 24, Resolve's default
+/// timeline rate.
 constexpr double kFallbackFrameRate = 24.0;
 
 /// OFX time is in frames. This is the first positive, finite frame rate the
 /// host gives -- the output clip's, the source clip's, the effect's -- else
 /// kFallbackFrameRate. Each read is its own try: Resolve's Fusion page gives
-/// kOfxImageEffectPropFrameRate on neither the effect nor any clip, the
-/// Support library throws on a property the host lacks, and a throw out of
-/// render fails the render -- in Fusion, a composition that "could not be
-/// processed successfully".
+/// kOfxImageEffectPropFrameRate on the effect but on no clip, the Support
+/// library throws on a property the host lacks, and a throw out of render
+/// fails the render -- in Fusion, a composition that "could not be processed
+/// successfully". There the effect's rate, the timeline's, is the one used.
 double framesPerSecond( const OFX::ImageEffect& effect, const OFX::Clip* output, const OFX::Clip* source )
 {
 	const auto usable = []( double rate ) { return std::isfinite( rate ) && rate > 0.0; };
@@ -673,7 +675,7 @@ private:
 
 		//OFX time is FRAMES. Seconds come from the clip's frame rate, and a
 		//host that reports zero -- some do, for a generator with nothing
-		//connected -- or none at all -- Resolve's Fusion page -- would
+		//connected -- or none on a clip, as Resolve's Fusion page does -- would
 		//otherwise divide by it or fail the render. See framesPerSecond.
 		const double fps = framesPerSecond( *this, dstClip, srcClip );
 
