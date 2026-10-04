@@ -60,6 +60,7 @@ constexpr const char* kPluginDescription =
 	"on its own and scrubbing shows the wheel at that moment.\n\n"
 	"Note: the Simmer control in the Resolume build is not here. It is a "
 	"feedback buffer, and this host renders frames out of order.\n\n"
+	"Fusion reports no frame rate; there, time-based controls assume 24 fps.\n\n"
 	"https://stoatworks-labs.com";
 
 constexpr const char* kParamCells      = "cells";
@@ -421,6 +422,46 @@ private:
 	}
 };
 
+/// The frame rate when the host reports none: 24, Resolve's default timeline
+/// rate. Resolve's Fusion page reports no frame rate anywhere.
+constexpr double kFallbackFrameRate = 24.0;
+
+/// OFX time is in frames. This is the first positive, finite frame rate the
+/// host gives -- the output clip's, the source clip's, the effect's -- else
+/// kFallbackFrameRate. Each read is its own try: Resolve's Fusion page gives
+/// kOfxImageEffectPropFrameRate on neither the effect nor any clip, the
+/// Support library throws on a property the host lacks, and a throw out of
+/// render fails the render -- in Fusion, a composition that "could not be
+/// processed successfully".
+double framesPerSecond( const OFX::ImageEffect& effect, const OFX::Clip* output, const OFX::Clip* source )
+{
+	const auto usable = []( double rate ) { return std::isfinite( rate ) && rate > 0.0; };
+	for( const OFX::Clip* clip : { output, source } )
+	{
+		if( clip == nullptr )
+			continue;
+		try
+		{
+			const double rate = clip->getFrameRate();
+			if( usable( rate ) )
+				return rate;
+		}
+		catch( ... )
+		{
+		}
+	}
+	try
+	{
+		const double rate = effect.getFrameRate();
+		if( usable( rate ) )
+			return rate;
+	}
+	catch( ... )
+	{
+	}
+	return kFallbackFrameRate;
+}
+
 //---------------------------------------------------------------------------
 class FlenserOFXPlugin : public OFX::ImageEffect
 {
@@ -615,12 +656,9 @@ private:
 
 		//OFX time is FRAMES. Seconds come from the clip's frame rate, and a
 		//host that reports zero -- some do, for a generator with nothing
-		//connected -- would otherwise divide by it.
-		double fps = dstClip->getFrameRate();
-		if( !( fps > 0.0 ) && srcClip != nullptr )
-			fps = srcClip->getFrameRate();
-		if( !( fps > 0.0 ) )
-			fps = 25.0;
+		//connected -- or none at all -- Resolve's Fusion page -- would
+		//otherwise divide by it or fail the render. See framesPerSecond.
+		const double fps = framesPerSecond( *this, dstClip, srcClip );
 
 		w.time = static_cast< float >( t / fps );
 
