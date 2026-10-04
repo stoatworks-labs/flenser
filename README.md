@@ -10,10 +10,13 @@
 > through the Resolume build, 0 of 921,600 through the OpenFX one. As of v0.1.2
 > **both Resolume plugins load and register in Arena 7.27.1 on Windows** —
 > checked with the build that release ships, on a machine with no graphics card,
-> so it says the plugin is correct and nothing about how fast it is. **It has
-> still never been loaded into Resolve**, and the Linux build has never been
-> run. See the "what is actually verified" section of [AGENTS.md](AGENTS.md),
-> and check it in your own rig before trusting it in a show.
+> so it says the plugin is correct and nothing about how fast it is. As of
+> v0.1.6 the OpenFX build **renders on DaVinci Resolve's Fusion page** (Resolve
+> Studio 21.1, macOS), where v0.1.5's failed every frame, and its generator
+> moves there; no other page of Resolve has been tried, and the Linux build has
+> never been run. See the "what is actually verified" section of
+> [AGENTS.md](AGENTS.md), and check it in your own rig before trusting it in a
+> show.
 
 A liquid light show, as a plugin.
 
@@ -197,8 +200,9 @@ cmake --build build
 
 `CLAUDE.md` is the command reference. `AGENTS.md` is the *why*, including the
 list of traps and an explicit account of what is verified and what is only
-assumed — **read that before telling anybody this works in a host**, because at
-the time of writing it has not been loaded into one.
+assumed — **read that before telling anybody this works in a host**, because the
+only real hosts it has met are Resolume Arena on a Windows machine with no
+graphics card and Resolve's Fusion page.
 
 Verify without a host:
 

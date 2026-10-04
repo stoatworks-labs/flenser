@@ -551,8 +551,11 @@ where there should have been forty, in the demo only, with nothing to see.
   host exercises are: `plugMain` and `instantiateGL` (the `SetTextParameter`
   trap lives there), whether Resolume honours the parameter groups, and what
   the host's clock and blend state actually look like on the way in.
-- ☠️ **It has never been loaded into DaVinci Resolve.** `ofxprobe` is a
-  faithful harness but it is not Resolve, and in particular it is not a host
+- ☠️ **In DaVinci Resolve it has only been run as a Fusion tool.** On
+  2026-10-04, in Resolve Studio 21.1 on macOS, the guarded build rendered on the
+  Fusion page, and with the frame-varying flag the generator's frames move (the
+  two Fusion traps above). The Edit and Color pages have never been tried.
+  `ofxprobe` is a faithful harness but it is not Resolve, and in particular it is not a host
   that renders frames out of order across several threads — which is the
   condition the OpenFX build's whole design assumes.
 - ☠️ **Nothing built for Windows has ever been RUN.** It builds: the v0.1.0

@@ -15,7 +15,8 @@ at every edge is a lens that displaces what is behind it, splits it by wavelengt
 throws a bright caustic just inside a dark rim. Behind all of it is a condenser with a
 hot spot, a colour temperature and a round gate.
 
-> **Before you rely on this:** released at **v0.1.2**. The model exists twice — once in
+> **Before you rely on this:** released at **v0.1.6**, whose OpenFX build now renders on
+> DaVinci Resolve's Fusion page, with the generator moving there. The model exists twice — once in
 > GLSL for the GPU and once in C++ for the OpenFX build — and the two are measured
 > against each other across **1.6 million values** over every control, with no
 > disagreement past 5e-4. Both builds are separately proved to leave a picture exactly
@@ -26,9 +27,11 @@ hot spot, a colour temperature and a round gate.
 > **What has now been checked in a real host, and what has not.** As of v0.1.2 both
 > Resolume plugins load and register in Arena 7.27.1 on Windows — verified with the
 > build this release ships, on a machine with no graphics card, so it says the plugin
-> is correct and nothing at all about how fast it is. It has still never been loaded
-> into Resolve, and the Linux build has never been run. Everything else above runs the
-> plugin directly or runs the OpenFX bundle through a test host.
+> is correct and nothing at all about how fast it is. As of v0.1.6 the OpenFX build
+> renders as a Fusion tool in DaVinci Resolve Studio 21.1 on macOS, where v0.1.5's failed
+> every frame, and its generator moves there; no other page of Resolve has been tried. The
+> Linux build has never been run. Everything else above runs the plugin directly or runs
+> the OpenFX bundle through a test host.
 >
 > Two of the things that were wrong before v0.1.2 were found by somebody running it on
 > a real rig and telling us, not by any of the measurements above. Check it in your own
