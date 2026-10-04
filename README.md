@@ -48,16 +48,16 @@ meniscus.
 
 ## Download
 
-**[v0.1.5](https://github.com/stoatworks-labs/flenser/releases/tag/v0.1.5)** — prebuilt for macOS, Windows and Linux. Pick your platform:
+**[v0.1.6](https://github.com/stoatworks-labs/flenser/releases/tag/v0.1.6)** — prebuilt for macOS, Windows and Linux. Pick your platform:
 
 <details>
 <summary><b>macOS</b> — Universal (Apple Silicon + Intel)</summary>
 
 | Build | Download | Size |
 | --- | --- | --- |
-| Universal (Apple Silicon + Intel) · .dmg disk image | [`flenser-0.1.5-macos-universal.dmg`](https://github.com/stoatworks-labs/flenser/releases/download/v0.1.5/flenser-0.1.5-macos-universal.dmg) | 459 KB |
+| Universal (Apple Silicon + Intel) · .dmg disk image | [`flenser-0.1.6-macos-universal.dmg`](https://github.com/stoatworks-labs/flenser/releases/download/v0.1.6/flenser-0.1.6-macos-universal.dmg) | 459 KB |
 | Universal (Apple Silicon + Intel) · .zip archive | [`flenser-macos-universal.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-macos-universal.zip) | 407 KB |
-| Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-macos-universal.zip) | 254 KB |
+| Universal (Apple Silicon + Intel) · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-macos-universal.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-macos-universal.zip) | 255 KB |
 
 </details>
 
@@ -66,7 +66,7 @@ meniscus.
 
 | Build | Download | Size |
 | --- | --- | --- |
-| x64 · .exe installer | [`flenser-0.1.5-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/flenser/releases/download/v0.1.5/flenser-0.1.5-windows-x86_64-setup.exe) | 228 KB |
+| x64 · .exe installer | [`flenser-0.1.6-windows-x86_64-setup.exe`](https://github.com/stoatworks-labs/flenser/releases/download/v0.1.6/flenser-0.1.6-windows-x86_64-setup.exe) | 228 KB |
 | x64 · .zip archive | [`flenser-windows-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-windows-x86_64.zip) | 246 KB |
 | x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-windows-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-windows-x86_64.zip) | 77 KB |
 
@@ -77,7 +77,7 @@ meniscus.
 
 | Build | Download | Size |
 | --- | --- | --- |
-| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-linux-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-linux-x86_64.zip) | 721 KB |
+| x64 · .zip archive (OpenFX — Resolve, Vegas, Nuke) | [`flenser-ofx-linux-x86_64.zip`](https://github.com/stoatworks-labs/flenser/releases/latest/download/flenser-ofx-linux-x86_64.zip) | 722 KB |
 
 </details>
 
