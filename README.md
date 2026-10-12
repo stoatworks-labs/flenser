@@ -1,34 +1,30 @@
 # Flenser
 
 > **AI-assisted project.** This codebase was created with [Claude](https://claude.com/claude-code)
-> (Anthropic), directed and reviewed by a human author. The model is not
-> asserted but **measured**: the wheel's optics exist twice — once in GLSL for
-> the GPU and once in C++ for the OpenFX build — and an offline harness
-> compares the two across 1.6 million values over every control, finding no
-> disagreement past 5e-4. Both builds are separately proved to leave a picture
-> exactly as they found it when the wheel is clear: 0 of 230,400 bytes differ
-> through the Resolume build, 0 of 921,600 through the OpenFX one. As of v0.1.2
-> **both Resolume plugins load and register in Arena 7.27.1 on Windows** —
-> checked with the build that release ships, on a machine with no graphics card,
-> so it says the plugin is correct and nothing about how fast it is. As of
-> v0.1.6 the OpenFX build **renders on DaVinci Resolve's Fusion page** (Resolve
-> Studio 21.1, macOS), where v0.1.5's failed every frame, and its generator
-> moves there; no other page of Resolve has been tried, and the Linux build has
-> never been run. See the "what is actually verified" section of
-> [AGENTS.md](AGENTS.md), and check it in your own rig before trusting it in a
-> show.
+> (Anthropic), directed and reviewed by a human author. The model is measured rather than
+> asserted. The wheel's optics exist twice, once in GLSL for the GPU and once in C++ for the
+> OpenFX build, and an offline harness compares the two across 1.6 million values over every
+> control, finding no disagreement past 5e-4. Both builds are separately proved to leave a
+> picture exactly as they found it when the wheel is clear: 0 of 230,400 bytes differ through
+> the Resolume build, 0 of 921,600 through the OpenFX one. As of v0.1.2 **both Resolume
+> plugins load and register in Arena 7.27.1 on Windows**, checked with the build that release
+> ships on a machine with no graphics card, so it says the plugin is correct and nothing about
+> how fast it is. As of v0.1.6 the OpenFX build **renders on DaVinci Resolve's Fusion page**
+> (Resolve Studio 21.1, macOS), where v0.1.5's failed every frame, and its generator moves
+> there. No other page of Resolve has been tried, and the Linux build has never been run. The
+> "what is actually verified" section of [AGENTS.md](AGENTS.md) has the rest. Check it in your
+> own rig before you trust it in a show.
 
-A liquid light show, as a plugin.
+A liquid light show, as a plugin. All of the oil and none of the washing up.
 
-Oil, water, alcohol and dye between two watch glasses on the stage of an
-overhead projector. Cells of oil press on each other and join with a fillet;
-each one is a dye filter, so overlapping cells **multiply** — cyan over magenta
-is blue, not white; and the meniscus at every edge is a lens that displaces
-what is behind it, splits it by wavelength, and throws a bright caustic just
-inside a dark rim. Behind all of it is a Fresnel condenser with a visible hot
-spot, a colour temperature and a round gate.
+Oil, water, alcohol and dye between two watch glasses on the stage of an overhead projector.
+Cells of oil press against each other and join with a fillet. Each one is a dye filter, so
+overlapping cells **multiply** (cyan over magenta is blue, not white), and the meniscus at
+every edge is a lens that displaces what's behind it, splits it by wavelength, and throws a
+bright caustic just inside a dark rim. Behind all of it there's a Fresnel condenser with a
+visible hot spot, a colour temperature and a round gate.
 
-It ships as **four plugins from one model**:
+It ships as four plugins from one model:
 
 | | Resolume (FFGL) | Resolve, Nuke, Natron, Vegas (OpenFX) |
 | --- | --- | --- |
@@ -104,10 +100,10 @@ Eight factory presets, in both builds, from one table:
 
 [![Flenser — a liquid light show as a Resolume plugin](docs/video-thumb.png)](https://www.youtube.com/watch?v=QJ50vPvVlDc)
 
-*[Watch it running](https://www.youtube.com/watch?v=QJ50vPvVlDc) — 48 seconds,
-rendered by the plugin's own harness.*
+*[Watch it running](https://www.youtube.com/watch?v=QJ50vPvVlDc) (48 seconds), rendered
+by the plugin's own harness.*
 
-There is also a browser demo that runs the plugin's own shaders, with nothing
+There's also a browser demo that runs the plugin's own shaders, with nothing
 uploaded: **https://flenser-demo.stoatworks-labs.com**
 
 ---
@@ -127,38 +123,36 @@ firewall prompts, and how to verify a download.
 **Windows.** `Flenser.dll` and `Flenser Lamp.dll` into Resolume's extra effects
 folder; `Flenser.ofx.bundle` into `C:\Program Files\Common Files\OFX\Plugins`.
 
-**Linux.** The OpenFX build only — Resolume has no Linux version. Put
-`Flenser.ofx.bundle` in `/usr/OFX/Plugins`. It is built against glibc 2.28 so
-that it loads on Rocky 8, which is the Linux Resolve supports; anything newer
-loads it too.
+**Linux.** Just the OpenFX build, as Resolume hasn't got a Linux version. Put
+`Flenser.ofx.bundle` in `/usr/OFX/Plugins`. It's built against glibc 2.28 so that it loads
+on Rocky 8, which is the Linux Resolve supports, and anything newer loads it too.
 
 **Resolve's Fusion page reports the frame rate on the effect but not on its clips.**
-The first OpenFX builds read a clip's rate, which Fusion leaves out, and failed
-every render there. Now Flenser asks the output clip, the source clip and then the
-effect, so in Fusion the oil moves at the timeline's own rate (checked at 24 and 25
-fps). It assumes 24 fps, Resolve's default timeline rate, only where a host reports
-no rate at all.
+The first OpenFX builds read a clip's rate, which Fusion leaves out, and failed every
+render there. Now Flenser asks the output clip, then the source clip, then the effect, so in
+Fusion the oil moves at the timeline's own rate (checked at 24 and 25 fps). It only assumes
+24 fps, Resolve's default timeline rate, where a host doesn't report a rate at all.
 
 ---
 
 ## The controls
 
-Thirty-three of them, in seven groups. The long version is
-[`docs/USER-GUIDE.md`](docs/USER-GUIDE.md); the short version is that the four
-worth reaching for first are **Cells**, **Merge**, **Density** and **Churn**.
+There are thirty-three of them, in seven groups. The long version is
+[`docs/USER-GUIDE.md`](docs/USER-GUIDE.md); the short version is that the four worth
+reaching for first are **Cells**, **Merge**, **Density** and **Churn**.
 
-- **Wheel** — Cells, Size, Variation, Merge, Spread, Scatter, Seed.
+- **Wheel**: Cells, Size, Variation, Merge, Spread, Scatter, Seed.
   `Merge` is the one that decides whether the wheel is holding beads or pools.
-- **Motion** — Speed, Drift, Spin, Churn, Grain, Boil.
-  `Churn` is what stops the cells being circles, and is expressed as a fraction
+- **Motion**: Speed, Drift, Spin, Churn, Grain, Boil.
+  `Churn` is what stops the cells being circles, and it's expressed as a fraction
   of the noise's own wavelength so that it deforms the oil rather than folding
   it.
-- **Optics** — Density, Refraction, Dispersion, Meniscus, Caustic, Rim.
+- **Optics**: Density, Refraction, Dispersion, Meniscus, Caustic, Rim.
   `Density` is what makes the effect subtractive.
-- **Colour** — Palette, Hue, Hue Spread, Saturation.
-- **Lamp** — Lamp, Hotspot, Temperature, Gate, Gate Soft.
-- **Simmer** — Simmer, Smear. **Resolume only**, and off by default; see below.
-- **Output** — Mode, Mix.
+- **Colour**: Palette, Hue, Hue Spread, Saturation.
+- **Lamp**: Lamp, Hotspot, Temperature, Gate, Gate Soft.
+- **Simmer**: Simmer, Smear. **Resolume only**, and off by default; see below.
+- **Output**: Mode, Mix.
 
 `Mode` exists in the effect build only: **Project** puts the clip where the lamp
 was, **Over** lights the oil itself and lays it on the clip, and **Colourise**
@@ -170,22 +164,20 @@ takes only the clip's brightness and lets the dye supply all the colour.
 
 **Simmer is in the Resolume build and not in the OpenFX one.**
 
-Everything else in this plugin is a pure function of position and time — no
-advection, no accumulator, no frame history. That is what lets any frame render
-on its own, lets the GPU and the CPU be proved to agree, and makes scrubbing
-show the wheel at that moment rather than restarting it.
+Everything else in this plugin is a pure function of position and time, with no advection,
+accumulator or frame history. That's what lets any frame render on its own, lets the GPU and
+the CPU be proved to agree, and makes scrubbing show the wheel at that moment rather than
+restarting it.
 
-Simmer is the deliberate exception: a feedback buffer, advected along the churn
-field and carried forward under a ceiling. It is the one thing a closed-form
-field genuinely cannot do — leave a trail behind a moving cell, because that
-needs to know where the oil *was*.
+Simmer is the exception, on purpose: a feedback buffer, advected along the churn field and
+carried forward under a ceiling. It's the one thing a closed-form field can't do, which is
+leave a trail behind a moving cell, because that needs to know where the oil *was*.
 
-OpenFX hosts render frames in any order, alone, on several threads at once.
-Resolve rendering frame 500 before frame 4 is normal. A feedback buffer in that
-host either serialises it or renders differently every time, and an effect that
-does not match its own preview on the second export is worse than an effect
-that is missing a control. So the OpenFX build does not have it and says so in
-its own plugin description.
+OpenFX hosts render frames in any order, each on its own, on several threads at once. Resolve
+will quite normally render frame 500 before frame 4. A feedback buffer in that host either
+serialises it or renders differently every time, and an effect that doesn't match its own
+preview on the second export is worse than one that's missing a control. So the OpenFX build
+doesn't have it, and says so in its own plugin description.
 
 ---
 
@@ -198,11 +190,10 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-`CLAUDE.md` is the command reference. `AGENTS.md` is the *why*, including the
-list of traps and an explicit account of what is verified and what is only
-assumed — **read that before telling anybody this works in a host**, because the
-only real hosts it has met are Resolume Arena on a Windows machine with no
-graphics card and Resolve's Fusion page.
+`CLAUDE.md` is the command reference. `AGENTS.md` is the *why*, including the list of traps
+and a straight account of what's verified and what's only assumed. **Read that before
+telling anybody this works in a host**, because the only real hosts it's met are Resolume
+Arena on a Windows machine with no graphics card, and Resolve's Fusion page.
 
 Verify without a host:
 
@@ -210,9 +201,9 @@ Verify without a host:
 tools/verify.sh
 ```
 
-Which checks, among other things, that a clear wheel leaves the picture exactly
-as it found it (0/255), and that the GLSL half of the model and the C++ half
-still agree with each other across a million and a half comparisons.
+Among other things, that checks that a clear wheel leaves the picture exactly as it found it
+(0/255), and that the GLSL half of the model and the C++ half still agree with each other
+across a million and a half comparisons.
 
 ---
 
