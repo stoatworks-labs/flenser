@@ -546,7 +546,8 @@ where there should have been forty, in the demo only, with nothing to see.
 
 ### Assumed, not measured
 
-- ☠️ **It has never been loaded into Resolume.** Everything above runs the
+- ☠️ **It has never been loaded into Resolume on a Mac** (on Windows, see
+  below). Everything above runs the
   plugin class directly in a headless GL context. The things that only a real
   host exercises are: `plugMain` and `instantiateGL` (the `SetTextParameter`
   trap lives there), whether Resolume honours the parameter groups, and what
@@ -558,10 +559,12 @@ where there should have been forty, in the demo only, with nothing to see.
   `ofxprobe` is a faithful harness but it is not Resolve, and in particular it is not a host
   that renders frames out of order across several threads — which is the
   condition the OpenFX build's whole design assumes.
-- ☠️ **Nothing built for Windows has ever been RUN.** It builds: the v0.1.0
+- ☠️ **On Windows the Resolume DLLs have only been loaded, and the OpenFX
+  bundle never.** It builds: the v0.1.0
   release job produced both DLLs, the OpenFX bundle and an NSIS installer, so
-  the GLEW-from-vcpkg path configures and links. Nothing has loaded one into
-  Resolume on Windows.
+  the GLEW-from-vcpkg path configures and links. As of v0.1.2 both Resolume
+  plugins load and register in Arena 7.27.1 on Windows, on a machine with no
+  graphics card, which says nothing about how fast they are.
 - **The Linux OpenFX build LOADS and has never rendered.** On the v0.1.0 tag
   the bundle built in AlmaLinux 8 for glibc 2.28, the assertion confirmed it
   asks for nothing newer, and Rocky 8 `dlopen`ed it and got

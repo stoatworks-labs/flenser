@@ -27,8 +27,7 @@ out.
   cannot import it under node.
 - `vendor/` — the shared kit, vendored from
   `stoatworks-backend/resolume-demo/kit`. **Do not edit these.** Fix the master
-  and re-run its sync; note that the sync's repo list does not include `flenser`
-  yet, so these files were copied from `afterglow`'s copies by hand.
+  and re-run its sync, whose repo list includes `flenser`.
 
 ## The two checks, and why there are two
 

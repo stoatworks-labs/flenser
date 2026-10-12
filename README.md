@@ -28,8 +28,8 @@ It ships as four plugins from one model:
 
 | | Resolume (FFGL) | Resolve, Nuke, Natron, Vegas (OpenFX) |
 | --- | --- | --- |
-| the wheel on its own | **Flenser** | **Flenser** |
-| the clip as the lamp | **Flenser Lamp** | **Flenser Lamp** |
+| the wheel on its own | **SW Flenser** | **Flenser** |
+| the clip as the lamp | **SW Flenser Lamp** | **Flenser Lamp** |
 
 `Flenser Lamp` puts the incoming clip where the projector's lamp was: the
 footage is what shines through the oil, gets dyed by it, and bends at every
@@ -154,9 +154,11 @@ reaching for first are **Cells**, **Merge**, **Density** and **Churn**.
 - **Simmer**: Simmer, Smear. **Resolume only**, and off by default; see below.
 - **Output**: Mode, Mix.
 
-`Mode` exists in the effect build only: **Project** puts the clip where the lamp
-was, **Over** lights the oil itself and lays it on the clip, and **Colourise**
-takes only the clip's brightness and lets the dye supply all the colour.
+`Mode` has four settings, and the first three only mean anything in Flenser Lamp:
+**Project** puts the clip where the lamp was, **Over** lights the oil itself and
+lays it on the clip, and **Colourise** takes only the clip's brightness and lets
+the dye supply all the colour. **Matte** leaves the clip out and lays the lit oil
+over transparency, so it works in both plugins.
 
 ---
 

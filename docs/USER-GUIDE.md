@@ -50,8 +50,8 @@ the four that decide what the wheel is. The rest is adjustment.
 
 | | Resolume | Resolve / Nuke / Natron / Vegas |
 | --- | --- | --- |
-| the wheel on its own | **Flenser** (a source) | **Flenser** (a generator) |
-| the clip as the lamp | **Flenser Lamp** (an effect) | **Flenser Lamp** (a filter) |
+| the wheel on its own | **SW Flenser** (a source) | **Flenser** (a generator) |
+| the clip as the lamp | **SW Flenser Lamp** (an effect) | **Flenser Lamp** (a filter) |
 
 They declare the same controls and read the same presets. **Mix** doesn't apply
 to the generator, and nor do three of **Mode**'s four settings, because they're
