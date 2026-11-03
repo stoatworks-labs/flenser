@@ -24,6 +24,8 @@ every edge is a lens that displaces what's behind it, splits it by wavelength, a
 bright caustic just inside a dark rim. Behind all of it there's a Fresnel condenser with a
 visible hot spot, a colour temperature and a round gate.
 
+The [project page](https://stoatworks-labs.com/software/flenser/) has the downloads, the [user guide](https://stoatworks-labs.com/software/flenser/guide/) and the video.
+
 It ships as four plugins from one model:
 
 | | Resolume (FFGL) | Resolve, Nuke, Natron, Vegas (OpenFX) |
